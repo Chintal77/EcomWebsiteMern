@@ -13,8 +13,8 @@ const data = {
       description: 'high quality shirt',
     },
     {
-      name: 'Nike Slim shirt',
-      slug: 'nike-slim-shirt',
+      name: 'Nik Slim shirt',
+      slug: 'nik-slim-shirt',
       category: 'Shirts',
       image: '/images/p1.jpg', // 679px × 829px
       price: 240,
