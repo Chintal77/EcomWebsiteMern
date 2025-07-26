@@ -8,8 +8,18 @@ function App() {
   return (
     <BrowserRouter>
       <div>
-        <header>
-          <Link to=" ">ShopFusion</Link>
+        <header className="header">
+          <Link to="/" className="logo">
+            ShopFusion
+          </Link>
+          <div className="auth-buttons">
+            <Link to="/login" className="btn">
+              Login
+            </Link>
+            <Link to="/signup" className="btn">
+              Sign Up
+            </Link>
+          </div>
         </header>
 
         <main>

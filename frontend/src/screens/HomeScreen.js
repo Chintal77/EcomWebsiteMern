@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
-//import data from '../data';
 import axios from 'axios';
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useReducer } from 'react';
 import logger from 'use-reducer-logger';
+import '../HomeScreen.css';
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -23,7 +23,7 @@ function HomeScreen() {
     loading: true,
     error: '',
   });
-  //const [products, setProduct] = useState([]);
+
   useEffect(() => {
     const fetchData = async () => {
       dispatch({ type: 'FETCH_REQUEST' });
@@ -33,60 +33,66 @@ function HomeScreen() {
       } catch (err) {
         dispatch({ type: 'FETCH_FAIL', payload: err.message });
       }
-
-      //setProduct(result.data);
     };
     fetchData();
   }, []);
+
   return (
-    <div>
-      <h1>Featured products</h1>
-      <div className="products">
-        {loading ? (
-          <div>
-            Products are Loading from backend please wait for a while !!!
-          </div>
-        ) : error ? (
-          <div>{error}</div>
-        ) : (
-          products.map((product) => {
-            const discountPercentage = 20;
-            const discountAmount = Math.round(
-              (product.price * discountPercentage) / 100
-            );
-            const finalPrice = product.price - discountAmount;
+    <div className="container">
+      <main>
+        <h1 className="heading">Featured Products</h1>
+        <div className="products">
+          {loading ? (
+            <p className="message">
+              Products are loading from backend, please wait...
+            </p>
+          ) : error ? (
+            <p className="error">{error}</p>
+          ) : (
+            products.map((product) => {
+              const discountPercentage = 20;
+              const discountAmount = Math.round(
+                (product.price * discountPercentage) / 100
+              );
+              const finalPrice = product.price - discountAmount;
 
-            return (
-              <div className="product" key={product.slug}>
-                <span className="badge">20% OFF</span>
-
-                <img src={product.image} alt={product.name} />
-
-                <div className="product-info">
-                  <h3 className="product-name">
-                    <Link to={`/products/${product.slug}`}>{product.name}</Link>
-                  </h3>
-
-                  <p className="product-price">
-                    <span className="original-price">
-                      ₹{product.price.toLocaleString('en-IN')}
-                    </span>{' '}
-                    <span className="final-price">
-                      ₹{finalPrice.toLocaleString('en-IN')}
-                    </span>
-                  </p>
-
-                  <p className="product-discount">
-                    You save ₹{discountAmount.toLocaleString('en-IN')}
-                  </p>
-
-                  <button className="add-to-cart">Add to Cart</button>
+              return (
+                <div className="product-card" key={product.slug}>
+                  <span className="badge">20% OFF</span>
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="product-image"
+                  />
+                  <div className="product-info">
+                    <h3 className="product-name">
+                      <Link to={`/products/${product.slug}`}>
+                        {product.name}
+                      </Link>
+                    </h3>
+                    <p className="product-price">
+                      <span className="original-price">
+                        ₹{product.price.toLocaleString('en-IN')}
+                      </span>{' '}
+                      <span className="final-price">
+                        ₹{finalPrice.toLocaleString('en-IN')}
+                      </span>
+                    </p>
+                    <p className="product-discount">
+                      You save ₹{discountAmount.toLocaleString('en-IN')}
+                    </p>
+                    <button className="btn-cart">Add to Cart</button>
+                  </div>
                 </div>
-              </div>
-            );
-          })
-        )}
-      </div>
+              );
+            })
+          )}
+        </div>
+      </main>
+
+      <footer className="footer">
+        &copy; {new Date().getFullYear()} ShopFusion. All rights reserved.
+      </footer>
     </div>
   );
 }
