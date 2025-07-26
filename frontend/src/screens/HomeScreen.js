@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import data from '../data';
 
 function HomeScreen() {
@@ -20,7 +21,7 @@ function HomeScreen() {
 
               <div className="product-info">
                 <h3 className="product-name">
-                  <a href={`/products/${product.slug}`}>{product.name}</a>
+                  <Link to={`/products/${product.slug}`}>{product.name}</Link>
                 </h3>
 
                 <p className="product-price">

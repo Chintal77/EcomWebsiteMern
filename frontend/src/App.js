@@ -1,6 +1,6 @@
 import './App.css';
 import data from './data';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Link, Route, Routes } from 'react-router-dom';
 import HomeScreen from './screens/HomeScreen';
 import ProductScreen from './screens/ProductScreen';
 
@@ -9,7 +9,7 @@ function App() {
     <BrowserRouter>
       <div>
         <header>
-          <a href=" ">ShopFusion</a>
+          <Link to=" ">ShopFusion</Link>
         </header>
 
         <main>
