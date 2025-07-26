@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom';
 import data from '../data';
-import '../index.css'; // optional external CSS
+import '../index.css';
 
 function ProductScreen() {
   const { slug } = useParams();
