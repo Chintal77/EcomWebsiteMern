@@ -1,12 +1,22 @@
 import { Link } from 'react-router-dom';
-import data from '../data';
+//import data from '../data';
+import axios from 'axios';
+import { useEffect, useState } from 'react';
 
 function HomeScreen() {
+  const [products, setProduct] = useState([]);
+  useEffect(() => {
+    const fetchData = async () => {
+      const result = await axios.get('/api/products');
+      setProduct(result.data);
+    };
+    fetchData();
+  }, []);
   return (
     <div>
       <h1>Featured products</h1>
       <div className="products">
-        {data.products.map((product) => {
+        {products.map((product) => {
           const discountPercentage = 20;
           const discountAmount = Math.round(
             (product.price * discountPercentage) / 100
