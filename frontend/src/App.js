@@ -14,9 +14,13 @@ function App() {
           {data.products.map((product) => (
             <div className="product" key={product.slug}>
               <span className="badge">20% OFF</span>
+
               <img src={product.image} alt={product.name} />
+
               <div className="product-info">
-                <h3 className="product-name">{product.name}</h3>
+                <h3 className="product-name">
+                  <a href={`/products/${product.slug}`}>{product.name}</a>
+                </h3>
                 <p className="product-price">
                   ₹{product.price.toLocaleString('en-IN')}
                 </p>

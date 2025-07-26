@@ -98,6 +98,17 @@ h1 {
   text-align: center;
 }
 
+.product-name a {
+  color: var(--text-color);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.product-name a:hover {
+  color: #2a9d8f; /* or any highlight color you prefer */
+  text-decoration: underline;
+}
+
 .product-price {
   font-size: 1.1rem;
   font-weight: 600;
