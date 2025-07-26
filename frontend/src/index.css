@@ -110,10 +110,25 @@ h1 {
 }
 
 .product-price {
-  font-size: 1.1rem;
+  font-size: 1rem;
+  margin: 0.3rem 0;
+}
+
+.original-price {
+  text-decoration: line-through;
+  color: #888;
+  margin-right: 0.5rem;
+}
+
+.final-price {
+  color: #2a9d8f;
   font-weight: 600;
-  color: var(--primary-color);
-  margin-top: 0.3rem;
+}
+
+.product-discount {
+  font-size: 0.9rem;
+  color: #e76f51;
+  font-weight: 500;
 }
 
 @media (max-width: 768px) {
