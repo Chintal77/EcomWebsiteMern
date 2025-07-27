@@ -15,7 +15,7 @@ const data = {
     },
     {
       name: 'Adidas Casual Shirt',
-      slug: 'adidas-casual-shirt',
+      slug: 'Adidas-casual-shirt',
       category: 'Shirts',
       image: '/images/p1.jpg',
       price: 240,
@@ -28,7 +28,7 @@ const data = {
     },
     {
       name: 'Puma Stretch Shirt',
-      slug: 'puma-stretch-shirt',
+      slug: 'Puma-stretch-shirt',
       category: 'Shirts',
       image: '/images/p1.jpg',
       price: 490,

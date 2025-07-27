@@ -13,14 +13,14 @@ function App() {
 
   return (
     <BrowserRouter>
-      <div>
+      <div className="app-container">
         <header className="header">
           <Link to="/" className="logo">
             ShopFusion
           </Link>
         </header>
 
-        <main>
+        <main className="main-content">
           <Routes>
             <Route
               path="/"

@@ -7,9 +7,9 @@ import '../HomeScreen.css';
 const reducer = (state, action) => {
   switch (action.type) {
     case 'FETCH_REQUEST':
-      return { ...state, loading: true };
+      return { ...state, loading: true, error: '' };
     case 'FETCH_SUCCESS':
-      return { ...state, products: action.payload, loading: false };
+      return { ...state, products: action.payload, loading: false, error: '' };
     case 'FETCH_FAIL':
       return { ...state, loading: false, error: action.payload };
     default:
@@ -24,24 +24,43 @@ function HomeScreen({ cartItems, setCartItems }) {
     error: '',
   });
 
-  const [showCart, setShowCart] = useState(false); // 🛒 Show only after first click
+  const [showCart, setShowCart] = useState(false);
+  const [showRecovery, setShowRecovery] = useState(false);
+
+  const fetchData = async () => {
+    dispatch({ type: 'FETCH_REQUEST' });
+    try {
+      const result = await axios.get('/api/products');
+      dispatch({ type: 'FETCH_SUCCESS', payload: result.data });
+
+      // If we were previously in error state, show recovery message
+      if (error) {
+        setShowRecovery(true);
+        setTimeout(() => setShowRecovery(false), 3000);
+      }
+    } catch (err) {
+      dispatch({ type: 'FETCH_FAIL', payload: err.message });
+    }
+  };
 
   useEffect(() => {
     document.title = 'ShopFusion';
-    const fetchData = async () => {
-      dispatch({ type: 'FETCH_REQUEST' });
-      try {
-        const result = await axios.get('/api/products');
-        dispatch({ type: 'FETCH_SUCCESS', payload: result.data });
-      } catch (err) {
-        dispatch({ type: 'FETCH_FAIL', payload: err.message });
-      }
-    };
     fetchData();
   }, []);
 
+  // Polling retry if there's an error
+  useEffect(() => {
+    if (error) {
+      const retryInterval = setInterval(() => {
+        fetchData();
+      }, 5000); // Retry every 5 seconds
+
+      return () => clearInterval(retryInterval);
+    }
+  }, [error]);
+
   const handleAddToCart = (product) => {
-    setShowCart(true); // show 🛒 after any product is added
+    setShowCart(true);
     setCartItems((prevCart) => {
       const existingQty = prevCart[product.slug] || 0;
       return {
@@ -55,7 +74,6 @@ function HomeScreen({ cartItems, setCartItems }) {
 
   return (
     <div className="container">
-      {/* 🛒 Cart icon only after click */}
       {showCart && (
         <Link to="/cart" className="cart-indicator">
           🛒 <span className="cart-count">{cartCount}</span>
@@ -64,13 +82,27 @@ function HomeScreen({ cartItems, setCartItems }) {
 
       <main>
         <h1 className="heading">Featured Products</h1>
+
+        {/* ✅ We are back message */}
+        {showRecovery && (
+          <div className="recovery-message">
+            ✅ We're back online! Products loaded successfully.
+          </div>
+        )}
+
         <div className="products">
           {loading ? (
             <p className="message">
               Products are loading from backend, please wait...
             </p>
           ) : error ? (
-            <p className="error">{error}</p>
+            <div className="error-box">
+              <h2>😓 Oops! Something went wrong</h2>
+              <p>
+                Our servers are currently unreachable or experiencing issues.
+              </p>
+              <p>Please hang tight while we retry...</p>
+            </div>
           ) : (
             products.map((product) => {
               const discountMatch = product.badge?.match(/(\d+)%/);
