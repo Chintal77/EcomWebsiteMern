@@ -54,15 +54,20 @@ function ProductScreen({ cartItems, setCartItems }) {
 
   const handleAddToCart = () => {
     const existingQty = cartItems[product.slug] || 0;
-    const updatedCart = {
-      ...cartItems,
-      [product.slug]: existingQty + 1,
-    };
-    setCartItems(updatedCart);
+    if (existingQty < product.countInStock) {
+      const updatedCart = {
+        ...cartItems,
+        [product.slug]: existingQty + 1,
+      };
+      setCartItems(updatedCart);
+    }
   };
 
-  if (loading) return <div className="message">Loading product details...</div>;
-  if (error)
+  if (loading) {
+    return <div className="message">Loading product details...</div>;
+  }
+
+  if (error) {
     return (
       <div className="not-found">
         <h2>Oops! Product Not Found</h2>
@@ -74,6 +79,7 @@ function ProductScreen({ cartItems, setCartItems }) {
         </Link>
       </div>
     );
+  }
 
   const discountMatch = product.badge?.match(/(\d+)%/);
   const discountPercentage = discountMatch ? parseInt(discountMatch[1]) : 0;
@@ -81,21 +87,23 @@ function ProductScreen({ cartItems, setCartItems }) {
   const finalPrice = product.price - discountAmount;
 
   return (
-    <section className="product-card">
-      <img
-        src={product.image}
-        alt={product.name}
-        className="product-img"
-        onError={(e) => {
-          e.target.onerror = null;
-          e.target.src = '/images/broken.png';
-        }}
-      />
+    <section className="product-screen-container">
+      <div className="product-image-container">
+        <img
+          src={product.image}
+          alt={product.name}
+          className="product-img"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = '/images/broken.png';
+          }}
+        />
+        {product.badge && <span className="badge">{product.badge}</span>}
+      </div>
 
-      <div className="product-info">
+      <div className="product-detail-info">
         <div className="product-header">
-          {product.badge && <span className="badge">{product.badge}</span>}
-          <h2 className="product-name">{product.name}</h2>
+          <h1 className="product-name">{product.name}</h1>
         </div>
 
         <div className="product-rating">
@@ -106,7 +114,7 @@ function ProductScreen({ cartItems, setCartItems }) {
           <span className="price-final">₹{finalPrice.toLocaleString()}</span>{' '}
           <span className="price-original">
             ₹{product.price.toLocaleString()}
-          </span>
+          </span>{' '}
           <span className="price-discount">({discountPercentage}% OFF)</span>
         </div>
 
@@ -147,6 +155,10 @@ function ProductScreen({ cartItems, setCartItems }) {
             ? 'Limit Reached'
             : 'Add to Cart'}
         </button>
+
+        <Link to="/" className="back-home-link">
+          🔙 Back to Products
+        </Link>
       </div>
     </section>
   );
