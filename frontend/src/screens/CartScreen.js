@@ -1,5 +1,5 @@
 import { useEffect, useReducer, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../CartScreen.css';
 
@@ -24,6 +24,8 @@ function CartScreen({ cartItems, setCartItems }) {
   });
 
   const [productsInCart, setProductsInCart] = useState([]);
+  const navigate = useNavigate();
+  const userInfo = localStorage.getItem('userInfo');
 
   useEffect(() => {
     document.title = 'Shopfusion | Cart';
@@ -98,6 +100,14 @@ function CartScreen({ cartItems, setCartItems }) {
     }));
   };
 
+  const handleCheckout = () => {
+    if (userInfo) {
+      navigate('/checkout');
+    } else {
+      navigate('/login?redirect=/checkout');
+    }
+  };
+
   return (
     <div className="cart-container">
       <h2 className="cart-heading">🛒 Your Shopping Cart</h2>
@@ -149,29 +159,30 @@ function CartScreen({ cartItems, setCartItems }) {
                     </p>
 
                     <div className="quantity-controls">
-                      <span className="label">Qty:</span>
-                      <button
-                        className="qty-btn"
-                        onClick={() => decreaseQuantity(product.slug)}
-                      >
-                        ➖
-                      </button>
-                      <span className="qty-value">{quantity}</span>
-                      <button
-                        className="qty-btn"
-                        onClick={() => increaseQuantity(product.slug)}
-                        disabled={
-                          cartItems[product.slug] >= product.countInStock
-                        }
-                        title={
-                          cartItems[product.slug] >= product.countInStock
-                            ? `Only ${product.countInStock} in stock`
-                            : ''
-                        }
-                      >
-                        ➕
-                      </button>
-
+                      <div className="qty-group">
+                        <span className="label">Qty:</span>
+                        <button
+                          className="qty-btn"
+                          onClick={() => decreaseQuantity(product.slug)}
+                        >
+                          ➖
+                        </button>
+                        <span className="qty-value">{quantity}</span>
+                        <button
+                          className="qty-btn"
+                          onClick={() => increaseQuantity(product.slug)}
+                          disabled={
+                            cartItems[product.slug] >= product.countInStock
+                          }
+                          title={
+                            cartItems[product.slug] >= product.countInStock
+                              ? `Only ${product.countInStock} in stock`
+                              : ''
+                          }
+                        >
+                          ➕
+                        </button>
+                      </div>
                       <button
                         className="delete-btn"
                         onClick={() => handleDeleteItem(product.slug)}
@@ -194,7 +205,9 @@ function CartScreen({ cartItems, setCartItems }) {
           <div className="cart-summary">
             <h3>Total Amount</h3>
             <h2>₹{totalAmount.toLocaleString('en-IN')}</h2>
-            <button className="checkout-btn">✅ Proceed to Checkout</button>
+            <button className="checkout-btn" onClick={handleCheckout}>
+              ✅ Proceed to Checkout
+            </button>
             <button className="empty-btn" onClick={handleEmptyCart}>
               🗑️ Empty Cart
             </button>
