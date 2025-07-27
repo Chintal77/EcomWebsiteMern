@@ -57,15 +57,25 @@ function HomeScreen({ cartItems, setCartItems }) {
     }
   }, [error, fetchData]);
 
-  const handleAddToCart = (product) => {
-    setShowCart(true);
-    setCartItems((prevCart) => {
-      const existingQty = prevCart[product.slug] || 0;
-      return {
+  const handleAddToCart = async (product) => {
+    const existingQty = cartItems[product.slug] || 0;
+
+    try {
+      const { data } = await axios.get(`/api/products/${product.slug}`);
+      if (existingQty >= data.countInStock) {
+        alert('❌ Cannot add more. Stock limit reached!');
+        return;
+      }
+
+      setShowCart(true);
+      setCartItems((prevCart) => ({
         ...prevCart,
         [product.slug]: existingQty + 1,
-      };
-    });
+      }));
+    } catch (err) {
+      alert('⚠️ Error checking stock. Please try again later.');
+      console.error(err);
+    }
   };
 
   const cartCount = Object.values(cartItems).reduce((sum, qty) => sum + qty, 0);
@@ -144,20 +154,32 @@ function HomeScreen({ cartItems, setCartItems }) {
                       <span>({product.numReviews} reviews)</span>
                     </p>
                     <button
-                      className="btn-cart"
-                      disabled={product.countInStock === 0}
+                      className={`btn-cart ${
+                        product.countInStock === 0
+                          ? 'btn-out'
+                          : (cartItems[product.slug] || 0) >=
+                            product.countInStock
+                          ? 'btn-limit'
+                          : 'btn-add'
+                      }`}
+                      disabled={
+                        product.countInStock === 0 ||
+                        (cartItems[product.slug] || 0) >= product.countInStock
+                      }
                       onClick={() => handleAddToCart(product)}
-                      style={{
-                        backgroundColor:
-                          product.countInStock === 0 ? '#ccc' : '',
-                        cursor:
-                          product.countInStock === 0
-                            ? 'not-allowed'
-                            : 'pointer',
-                      }}
+                      title={
+                        product.countInStock === 0
+                          ? 'Out of stock'
+                          : (cartItems[product.slug] || 0) >=
+                            product.countInStock
+                          ? 'You have reached the max quantity available.'
+                          : ''
+                      }
                     >
                       {product.countInStock === 0
                         ? 'Out of Stock'
+                        : (cartItems[product.slug] || 0) >= product.countInStock
+                        ? 'Limit Reached'
                         : 'Add to Cart'}
                     </button>
                   </div>

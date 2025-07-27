@@ -202,3 +202,32 @@ html {
   margin-bottom: 1.5rem;
   animation: fadeIn 0.4s ease-in-out;
 }
+
+.btn-cart {
+  padding: 10px 16px;
+  border: none;
+  font-weight: bold;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.btn-cart:disabled {
+  cursor: not-allowed;
+}
+
+.btn-add {
+  background-color: #28a745; /* green */
+  color: white;
+  cursor: pointer;
+}
+
+.btn-limit {
+  background-color: #ff9800; /* orange */
+  color: white;
+}
+
+.btn-out {
+  background-color: #e53935; /* red */
+  color: white;
+}

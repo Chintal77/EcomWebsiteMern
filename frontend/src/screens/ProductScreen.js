@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import '../index.css';
 import { useEffect, useReducer, useState } from 'react';
@@ -33,8 +33,6 @@ function ProductScreen({ cartItems, setCartItems }) {
     error: '',
   });
 
-  const [quantity, setQuantity] = useState(1);
-
   useEffect(() => {
     const fetchProduct = async () => {
       dispatch({ type: 'FETCH_REQUEST' });
@@ -58,7 +56,7 @@ function ProductScreen({ cartItems, setCartItems }) {
     const existingQty = cartItems[product.slug] || 0;
     const updatedCart = {
       ...cartItems,
-      [product.slug]: existingQty + quantity,
+      [product.slug]: existingQty + 1,
     };
     setCartItems(updatedCart);
   };
@@ -71,9 +69,9 @@ function ProductScreen({ cartItems, setCartItems }) {
         <p>
           The product you are looking for doesn’t exist or has been removed.
         </p>
-        <a href="/" className="back-home-btn">
+        <Link to="/" className="back-home-btn">
           🔙 Go Back Home
-        </a>
+        </Link>
       </div>
     );
 
@@ -83,105 +81,72 @@ function ProductScreen({ cartItems, setCartItems }) {
   const finalPrice = product.price - discountAmount;
 
   return (
-    <section className="product-detail-section">
-      <div className="product-card-glass">
-        <div className="product-left">
-          <img
-            src={product.image}
-            alt={product.name}
-            className="product-img-glass"
-            onError={(e) => {
-              e.target.onerror = null;
-              e.target.src = '/images/broken.png';
-            }}
-          />
-        </div>
+    <section className="product-card">
+      <img
+        src={product.image}
+        alt={product.name}
+        className="product-img"
+        onError={(e) => {
+          e.target.onerror = null;
+          e.target.src = '/images/broken.png';
+        }}
+      />
 
-        <div className="product-right">
+      <div className="product-info">
+        <div className="product-header">
           {product.badge && <span className="badge">{product.badge}</span>}
-          <h1 className="product-title">{product.name}</h1>
-
-          <div className="product-rating">
-            ⭐ {product.rating} <span>({product.numReviews} reviews)</span>
-          </div>
-
-          <div className="price-block">
-            <p className="price-original">
-              MRP: <del>₹{product.price.toLocaleString()}</del>
-            </p>
-            <p className="price-discount">
-              You Save: ₹{discountAmount.toLocaleString()} ({discountPercentage}
-              %)
-            </p>
-            <p className="price-final">
-              Deal Price: <strong>₹{finalPrice.toLocaleString()}</strong>
-            </p>
-          </div>
-
-          <p className="description">{product.description}</p>
-
-          <div className="extra-info">
-            <p
-              className={`stock ${
-                product.countInStock > 0 ? 'in-stock' : 'out-of-stock'
-              }`}
-            >
-              {product.countInStock > 0 ? '✅ In Stock' : '❌ Out of Stock'}
-            </p>
-            <p>
-              Sold by <strong>ShopFusion Retail</strong>
-            </p>
-            <p>
-              Delivery by <strong>Monday, July 29</strong>
-            </p>
-            <p>🔁 7-Day Return Policy</p>
-            <p>🔒 Secure Transaction</p>
-          </div>
-
-          <div className="quantity-select">
-            <label htmlFor="quantity">Qty:</label>
-            <select
-              id="quantity"
-              value={quantity}
-              onChange={(e) => setQuantity(Number(e.target.value))}
-            >
-              {[...Array(10).keys()].map((x) => (
-                <option key={x + 1} value={x + 1}>
-                  {x + 1}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="button-group">
-            <button
-              className="btn-cart"
-              disabled={product.countInStock === 0}
-              onClick={handleAddToCart}
-              style={{
-                backgroundColor: product.countInStock === 0 ? '#ccc' : '',
-                cursor: product.countInStock === 0 ? 'not-allowed' : 'pointer',
-              }}
-            >
-              🛒 Add to Cart
-            </button>
-
-            <button
-              className="btn-buy"
-              disabled={product.countInStock === 0}
-              style={{
-                backgroundColor: product.countInStock === 0 ? '#ccc' : '',
-                cursor: product.countInStock === 0 ? 'not-allowed' : 'pointer',
-              }}
-            >
-              ⚡ Buy Now
-            </button>
-          </div>
-
-          <div className="payment-methods">
-            <p>💳 Pay via: UPI | Cards | EMI | NetBanking</p>
-          </div>
+          <h2 className="product-name">{product.name}</h2>
         </div>
+
+        <div className="product-rating">
+          ⭐ {product.rating} ({product.numReviews} reviews)
+        </div>
+
+        <div className="product-price">
+          <span className="price-final">₹{finalPrice.toLocaleString()}</span>{' '}
+          <span className="price-original">
+            ₹{product.price.toLocaleString()}
+          </span>
+          <span className="price-discount">({discountPercentage}% OFF)</span>
+        </div>
+
+        <p className="product-description">{product.description}</p>
+
+        <p
+          className={`stock ${
+            product.countInStock > 0 ? 'in-stock' : 'out-of-stock'
+          }`}
+        >
+          {product.countInStock > 0 ? '✅ In Stock' : '❌ Out of Stock'}
+        </p>
+
+        <button
+          className={`btn-cart ${
+            product.countInStock === 0
+              ? 'btn-out'
+              : (cartItems[product.slug] || 0) >= product.countInStock
+              ? 'btn-limit'
+              : 'btn-add'
+          }`}
+          disabled={
+            product.countInStock === 0 ||
+            (cartItems[product.slug] || 0) >= product.countInStock
+          }
+          onClick={handleAddToCart}
+          title={
+            product.countInStock === 0
+              ? 'Out of stock'
+              : (cartItems[product.slug] || 0) >= product.countInStock
+              ? 'You have reached the max quantity available.'
+              : ''
+          }
+        >
+          {product.countInStock === 0
+            ? 'Out of Stock'
+            : (cartItems[product.slug] || 0) >= product.countInStock
+            ? 'Limit Reached'
+            : 'Add to Cart'}
+        </button>
       </div>
     </section>
   );

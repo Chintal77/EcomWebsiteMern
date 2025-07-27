@@ -699,3 +699,95 @@ body {
     transform: translateY(0);
   }
 }
+
+.product-card {
+  display: flex;
+  flex-direction: column;
+  max-width: 400px;
+  margin: 2rem auto;
+  border: 1px solid #eee;
+  padding: 1rem;
+  border-radius: 10px;
+  background-color: #fff;
+}
+
+.product-img {
+  width: 100%;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.product-info {
+  padding: 1rem 0;
+}
+
+.badge {
+  background-color: red;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 5px;
+  font-size: 0.8rem;
+}
+
+.product-name {
+  font-size: 1.4rem;
+  font-weight: bold;
+  margin: 0.5rem 0;
+}
+
+.price-final {
+  color: green;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.price-original {
+  text-decoration: line-through;
+  color: gray;
+  margin-left: 0.5rem;
+}
+
+.price-discount {
+  color: red;
+  margin-left: 0.5rem;
+}
+
+.btn-cart {
+  padding: 0.5rem 1rem;
+  margin-top: 1rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-add {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-out {
+  background-color: gray;
+  color: white;
+  cursor: not-allowed;
+}
+
+.btn-limit {
+  background-color: orange;
+  color: white;
+  cursor: not-allowed;
+}
+
+.stock {
+  font-weight: bold;
+  margin: 0.5rem 0;
+}
+
+.in-stock {
+  color: green;
+}
+
+.out-of-stock {
+  color: red;
+}
