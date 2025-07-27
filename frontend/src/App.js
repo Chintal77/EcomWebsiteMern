@@ -1,7 +1,6 @@
 import './App.css';
-import data from './data';
 import { BrowserRouter, Link, Route, Routes } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import HomeScreen from './screens/HomeScreen';
 import ProductScreen from './screens/ProductScreen';
 import LoginScreen from './screens/LoginScreen';
@@ -9,7 +8,20 @@ import SignupScreen from './screens/SignupScreen';
 import CartScreen from './screens/CartScreen';
 
 function App() {
-  const [cartItems, setCartItems] = useState({}); // 🔁 shared cart state
+  const [cartItems, setCartItems] = useState(() => {
+    const saved = localStorage.getItem('cartItems');
+    return saved ? JSON.parse(saved) : {};
+  });
+
+  useEffect(() => {
+    localStorage.setItem('cartItems', JSON.stringify(cartItems));
+  }, [cartItems]);
+
+  const cartCount = Object.values(cartItems).reduce((sum, item) => {
+    if (typeof item === 'number') return sum + item;
+    if (typeof item === 'object' && item.quantity) return sum + item.quantity;
+    return sum;
+  }, 0);
 
   return (
     <BrowserRouter>
@@ -17,6 +29,12 @@ function App() {
         <header className="header">
           <Link to="/" className="logo">
             ShopFusion
+          </Link>
+          <Link to="/cart" className="cart-icon-link">
+            🛒
+            <span className="cart-count">
+              <span className="cart-count">{cartCount}</span>
+            </span>
           </Link>
         </header>
 
@@ -28,7 +46,15 @@ function App() {
                 <HomeScreen cartItems={cartItems} setCartItems={setCartItems} />
               }
             />
-            <Route path="/products/:slug" element={<ProductScreen />} />
+            <Route
+              path="/products/:slug"
+              element={
+                <ProductScreen
+                  cartItems={cartItems}
+                  setCartItems={setCartItems}
+                />
+              }
+            />
             <Route path="/login" element={<LoginScreen />} />
             <Route path="/signup" element={<SignupScreen />} />
             <Route

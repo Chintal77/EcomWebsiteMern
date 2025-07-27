@@ -1,4 +1,4 @@
-import { useEffect, useReducer } from 'react';
+import { useEffect, useReducer, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import '../CartScreen.css';
@@ -23,6 +23,8 @@ function CartScreen({ cartItems, setCartItems }) {
     products: [],
   });
 
+  const [productsInCart, setProductsInCart] = useState([]);
+
   useEffect(() => {
     document.title = 'Shopfusion | Cart';
   }, []);
@@ -40,10 +42,13 @@ function CartScreen({ cartItems, setCartItems }) {
     fetchProducts();
   }, []);
 
-  const cartProductSlugs = Object.keys(cartItems);
-  const productsInCart = products.filter((product) =>
-    cartProductSlugs.includes(product.slug)
-  );
+  useEffect(() => {
+    const cartProductSlugs = Object.keys(cartItems);
+    const filteredProducts = products.filter((product) =>
+      cartProductSlugs.includes(product.slug)
+    );
+    setProductsInCart(filteredProducts);
+  }, [products, cartItems]);
 
   const cartIsEmpty = productsInCart.length === 0;
 

@@ -23,7 +23,7 @@ const getLogger = () => {
   return (r) => r;
 };
 
-function ProductScreen() {
+function ProductScreen({ cartItems, setCartItems }) {
   const { slug } = useParams();
   const logger = getLogger();
 
@@ -53,6 +53,15 @@ function ProductScreen() {
       document.title = `ShopFusion | ${product.name}`;
     }
   }, [product]);
+
+  const handleAddToCart = () => {
+    const existingQty = cartItems[product.slug] || 0;
+    const updatedCart = {
+      ...cartItems,
+      [product.slug]: existingQty + quantity,
+    };
+    setCartItems(updatedCart);
+  };
 
   if (loading) return <div className="message">Loading product details...</div>;
   if (error)
@@ -148,6 +157,7 @@ function ProductScreen() {
             <button
               className="btn-cart"
               disabled={product.countInStock === 0}
+              onClick={handleAddToCart}
               style={{
                 backgroundColor: product.countInStock === 0 ? '#ccc' : '',
                 cursor: product.countInStock === 0 ? 'not-allowed' : 'pointer',
