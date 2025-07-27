@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { useEffect, useReducer } from 'react';
+import { useEffect, useReducer, useState } from 'react';
 import logger from 'use-reducer-logger';
 import '../HomeScreen.css';
 
@@ -17,17 +17,17 @@ const reducer = (state, action) => {
   }
 };
 
-function HomeScreen() {
-  useEffect(() => {
-    document.title = 'ShopFusion';
-  }, []);
+function HomeScreen({ cartItems, setCartItems }) {
   const [{ loading, error, products }, dispatch] = useReducer(logger(reducer), {
     products: [],
     loading: true,
     error: '',
   });
 
+  const [showCart, setShowCart] = useState(false); // 🛒 Show only after first click
+
   useEffect(() => {
+    document.title = 'ShopFusion';
     const fetchData = async () => {
       dispatch({ type: 'FETCH_REQUEST' });
       try {
@@ -40,8 +40,28 @@ function HomeScreen() {
     fetchData();
   }, []);
 
+  const handleAddToCart = (product) => {
+    setShowCart(true); // show 🛒 after any product is added
+    setCartItems((prevCart) => {
+      const existingQty = prevCart[product.slug] || 0;
+      return {
+        ...prevCart,
+        [product.slug]: existingQty + 1,
+      };
+    });
+  };
+
+  const cartCount = Object.values(cartItems).reduce((sum, qty) => sum + qty, 0);
+
   return (
     <div className="container">
+      {/* 🛒 Cart icon only after click */}
+      {showCart && (
+        <Link to="/cart" className="cart-indicator">
+          🛒 <span className="cart-count">{cartCount}</span>
+        </Link>
+      )}
+
       <main>
         <h1 className="heading">Featured Products</h1>
         <div className="products">
@@ -96,6 +116,7 @@ function HomeScreen() {
                     <button
                       className="btn-cart"
                       disabled={product.countInStock === 0}
+                      onClick={() => handleAddToCart(product)}
                       style={{
                         backgroundColor:
                           product.countInStock === 0 ? '#ccc' : '',

@@ -1,105 +1,83 @@
-import '../CartScreen.css';
-import data from '../data';
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import data from '../data';
+import '../CartScreen.css';
 
-function CartScreen() {
-  const [cartItems, setCartItems] = useState(data.products.slice(0, 2)); // simulate 2 items
-  const [quantities, setQuantities] = useState(
-    data.products.slice(0, 2).reduce((acc, product) => {
-      acc[product.slug] = 1;
-      return acc;
-    }, {})
+function CartScreen({ cartItems, setCartItems }) {
+  const cartProductSlugs = Object.keys(cartItems);
+
+  const productsInCart = data.products.filter((product) =>
+    cartProductSlugs.includes(product.slug)
   );
 
-  const handleQuantityChange = (slug, newQty) => {
-    setQuantities({ ...quantities, [slug]: Number(newQty) });
-  };
+  const cartIsEmpty = productsInCart.length === 0;
 
-  const removeFromCart = (slug) => {
-    setCartItems(cartItems.filter((item) => item.slug !== slug));
-    const updatedQuantities = { ...quantities };
-    delete updatedQuantities[slug];
-    setQuantities(updatedQuantities);
-  };
-
-  const total = cartItems.reduce((sum, item) => {
-    const discount = item.price * 0.2;
-    const finalPrice = item.price - discount;
-    return sum + finalPrice * quantities[item.slug];
+  const totalAmount = productsInCart.reduce((acc, product) => {
+    const quantity = cartItems[product.slug];
+    return acc + product.price * quantity;
   }, 0);
 
-  return (
-    <section className="cart-glass">
-      <h2 className="cart-title">🛒 Your Shopping Cart</h2>
+  const handleEmptyCart = () => {
+    if (window.confirm('Are you sure you want to empty the cart?')) {
+      setCartItems({});
+    }
+  };
 
-      {cartItems.length === 0 ? (
-        <p className="cart-empty">
-          Your cart is empty.{' '}
-          <Link to="/" className="shop-link">
-            Go shopping!
+  return (
+    <div className="cart-container">
+      <h2 className="cart-heading">🛒 Your Shopping Cart</h2>
+
+      {cartIsEmpty ? (
+        <div className="cart-empty">
+          <p>Your cart is empty.</p>
+          <Link to="/" className="cart-link">
+            🛍️ Go Shopping
           </Link>
-        </p>
+        </div>
       ) : (
         <>
-          <div className="cart-list">
-            {cartItems.map((item) => {
-              const discount = item.price * 0.2;
-              const finalPrice = item.price - discount;
+          <div className="cart-items">
+            {productsInCart.map((product) => {
+              const quantity = cartItems[product.slug];
+              const subtotal = product.price * quantity;
+
               return (
-                <div key={item.slug} className="cart-card">
+                <div className="cart-item-card" key={product.slug}>
                   <img
-                    src={item.image}
-                    alt={item.name}
-                    className="cart-thumb"
+                    src={product.image}
+                    alt={product.name}
+                    className="cart-item-img"
                   />
-                  <div className="cart-info">
-                    <h3>{item.name}</h3>
+                  <div className="cart-item-details">
+                    <h3>{product.name}</h3>
                     <p>
-                      Price: <strong>₹{finalPrice.toLocaleString()}</strong>{' '}
-                      <span className="strike">
-                        ₹{item.price.toLocaleString()}
-                      </span>
+                      <strong>Price:</strong> ₹
+                      {product.price.toLocaleString('en-IN')}
                     </p>
-                    <div className="cart-qty-remove">
-                      <label>
-                        Qty:
-                        <select
-                          value={quantities[item.slug]}
-                          onChange={(e) =>
-                            handleQuantityChange(item.slug, e.target.value)
-                          }
-                        >
-                          {[...Array(10).keys()].map((x) => (
-                            <option key={x + 1} value={x + 1}>
-                              {x + 1}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                      <button
-                        className="btn-remove"
-                        onClick={() => removeFromCart(item.slug)}
-                      >
-                        ❌ Remove
-                      </button>
-                    </div>
+                    <p>
+                      <strong>Quantity:</strong> {quantity}
+                    </p>
+                    <p>
+                      <strong>Subtotal:</strong> ₹
+                      {subtotal.toLocaleString('en-IN')}
+                    </p>
                   </div>
                 </div>
               );
             })}
           </div>
 
-          <div className="cart-summary-glass">
-            <h3>Cart Summary</h3>
-            <p>
-              Total: <strong>₹{total.toLocaleString()}</strong>
-            </p>
-            <button className="btn-checkout">Proceed to Checkout</button>
+          <div className="cart-summary">
+            <h3>Total: ₹{totalAmount.toLocaleString('en-IN')}</h3>
+            <div className="cart-actions">
+              <button className="checkout-btn">Proceed to Checkout</button>
+              <button className="empty-btn" onClick={handleEmptyCart}>
+                🗑️ Empty Cart
+              </button>
+            </div>
           </div>
         </>
       )}
-    </section>
+    </div>
   );
 }
 

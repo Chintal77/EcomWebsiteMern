@@ -1,6 +1,7 @@
 import './App.css';
 import data from './data';
 import { BrowserRouter, Link, Route, Routes } from 'react-router-dom';
+import { useState } from 'react';
 import HomeScreen from './screens/HomeScreen';
 import ProductScreen from './screens/ProductScreen';
 import LoginScreen from './screens/LoginScreen';
@@ -8,6 +9,8 @@ import SignupScreen from './screens/SignupScreen';
 import CartScreen from './screens/CartScreen';
 
 function App() {
+  const [cartItems, setCartItems] = useState({}); // 🔁 shared cart state
+
   return (
     <BrowserRouter>
       <div>
@@ -15,30 +18,32 @@ function App() {
           <Link to="/" className="logo">
             ShopFusion
           </Link>
-          <div className="auth-buttons">
-            <Link to="/login" className="btn">
-              Login
-            </Link>
-            <Link to="/signup" className="btn">
-              Sign Up
-            </Link>
-          </div>
         </header>
 
         <main>
           <Routes>
-            <Route path="/" element={<HomeScreen />} />
+            <Route
+              path="/"
+              element={
+                <HomeScreen cartItems={cartItems} setCartItems={setCartItems} />
+              }
+            />
             <Route path="/products/:slug" element={<ProductScreen />} />
             <Route path="/login" element={<LoginScreen />} />
             <Route path="/signup" element={<SignupScreen />} />
-            <Route path="/cart" element={<CartScreen />} />
+            <Route
+              path="/cart"
+              element={
+                <CartScreen cartItems={cartItems} setCartItems={setCartItems} />
+              }
+            />
           </Routes>
         </main>
-      </div>
 
-      <footer className="footer">
-        &copy; {new Date().getFullYear()} ShopFusion. All rights reserved.
-      </footer>
+        <footer className="footer">
+          &copy; {new Date().getFullYear()} ShopFusion. All rights reserved.
+        </footer>
+      </div>
     </BrowserRouter>
   );
 }

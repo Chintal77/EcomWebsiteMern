@@ -1,185 +1,99 @@
-.cart-glass {
+.cart-container {
   max-width: 1000px;
-  margin: 2rem auto;
-  background: rgba(255, 255, 255, 0.75);
-  padding: 2rem;
-  border-radius: 1.5rem;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  margin: 30px auto;
+  padding: 20px;
+  font-family: 'Segoe UI', sans-serif;
 }
 
-.cart-title {
-  font-size: 1.8rem;
+.cart-heading {
   text-align: center;
-  margin-bottom: 2rem;
+  font-size: 2rem;
+  margin-bottom: 30px;
   color: #333;
 }
 
 .cart-empty {
   text-align: center;
-  font-size: 1rem;
+  font-size: 1.2rem;
+  color: #555;
 }
 
-.shop-link {
-  color: #2a9d8f;
+.cart-link {
+  color: #007bff;
+  text-decoration: none;
   font-weight: bold;
 }
 
-.cart-list {
+.cart-items {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 20px;
 }
 
-.cart-card {
+.cart-item-card {
   display: flex;
-  background: #ffffffea;
-  border-radius: 1rem;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-  overflow: hidden;
-  padding: 1rem;
-  align-items: center;
+  gap: 20px;
+  background: #f8f8f8;
+  border-radius: 12px;
+  padding: 15px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
-.cart-thumb {
+.cart-item-img {
   width: 120px;
   height: 120px;
   object-fit: contain;
-  border-radius: 0.5rem;
-  background: #f9f9f9;
+  border-radius: 8px;
 }
 
-.cart-info {
+.cart-item-details {
   flex: 1;
-  margin-left: 1.5rem;
 }
 
-.cart-info h3 {
-  margin-bottom: 0.3rem;
-  font-size: 1.2rem;
+.cart-item-details h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #222;
 }
 
-.strike {
-  text-decoration: line-through;
-  color: #888;
-  font-size: 0.9rem;
-}
-
-.cart-qty-remove {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 0.5rem;
-}
-
-.cart-qty-remove select {
-  padding: 6px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-}
-
-.btn-remove {
-  background-color: #f44336;
-  color: white;
-  padding: 6px 12px;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: 0.2s ease;
-}
-
-.btn-remove:hover {
-  background-color: #d32f2f;
-}
-
-.cart-summary-glass {
-  margin-top: 2rem;
-  padding: 1rem;
-  background: #f8f8f8;
-  border-radius: 1rem;
+.cart-summary {
+  margin-top: 30px;
   text-align: right;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  font-size: 1.3rem;
+  color: #222;
 }
 
-.btn-checkout {
-  background-color: #2a9d8f;
-  color: white;
+.checkout-btn {
+  margin-top: 10px;
   padding: 12px 24px;
-  font-size: 1rem;
-  font-weight: bold;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  margin-top: 1rem;
-  transition: 0.3s ease;
-}
-
-.btn-checkout:hover {
-  background-color: #238b7e;
-}
-
-@media (max-width: 768px) {
-  .cart-card {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .cart-thumb {
-    width: 100%;
-    height: auto;
-  }
-
-  .cart-info {
-    margin-left: 0;
-    margin-top: 1rem;
-  }
-
-  .cart-summary-glass {
-    text-align: center;
-  }
-}
-
-.cart-img-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  min-width: 120px;
-}
-
-.cart-card {
-  display: flex;
-  gap: 1.5rem;
-  align-items: center;
-}
-
-.cart-info {
-  flex: 1;
-}
-
-.cart-qty-row {
-  margin-top: 0.5rem;
-}
-
-.cart-qty-row select {
-  margin-left: 10px;
-  padding: 6px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-}
-
-.btn-remove {
-  background-color: #ff5c5c;
+  background: #28a745;
   color: white;
+  font-size: 1rem;
   border: none;
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 0.8rem;
+  border-radius: 8px;
   cursor: pointer;
-  transition: 0.2s ease-in-out;
+  transition: background 0.3s ease;
 }
 
-.btn-remove:hover {
-  background-color: #e53935;
+.checkout-btn:hover {
+  background: #218838;
+}
+
+.cart-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.empty-btn {
+  background-color: #ff4d4d;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.empty-btn:hover {
+  background-color: #e60000;
 }
