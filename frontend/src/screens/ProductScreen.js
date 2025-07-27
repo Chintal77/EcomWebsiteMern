@@ -48,9 +48,25 @@ function ProductScreen() {
     fetchProduct();
   }, [slug]);
 
+  useEffect(() => {
+    if (product && product.name) {
+      document.title = `ShopFusion | ${product.name}`;
+    }
+  }, [product]);
+
   if (loading) return <div className="message">Loading product details...</div>;
-  if (error) return <div className="error">{error}</div>;
-  if (!product) return <div className="not-found">Product not found.</div>;
+  if (error)
+    return (
+      <div className="not-found">
+        <h2>Oops! Product Not Found</h2>
+        <p>
+          The product you are looking for doesn’t exist or has been removed.
+        </p>
+        <a href="/" className="back-home-btn">
+          🔙 Go Back Home
+        </a>
+      </div>
+    );
 
   const discountMatch = product.badge?.match(/(\d+)%/);
   const discountPercentage = discountMatch ? parseInt(discountMatch[1]) : 0;
@@ -65,6 +81,10 @@ function ProductScreen() {
             src={product.image}
             alt={product.name}
             className="product-img-glass"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = '/images/broken.png';
+            }}
           />
         </div>
 
@@ -133,7 +153,7 @@ function ProductScreen() {
                 cursor: product.countInStock === 0 ? 'not-allowed' : 'pointer',
               }}
             >
-              🛒 {product.countInStock === 0 ? 'Add to Cart' : 'Add to Cart'}
+              🛒 Add to Cart
             </button>
 
             <button
@@ -144,7 +164,7 @@ function ProductScreen() {
                 cursor: product.countInStock === 0 ? 'not-allowed' : 'pointer',
               }}
             >
-              ⚡ {product.countInStock === 0 ? 'Buy Now' : 'Buy Now'}
+              ⚡ Buy Now
             </button>
           </div>
 

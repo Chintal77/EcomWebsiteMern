@@ -18,6 +18,9 @@ const reducer = (state, action) => {
 };
 
 function HomeScreen() {
+  useEffect(() => {
+    document.title = 'ShopFusion';
+  }, []);
   const [{ loading, error, products }, dispatch] = useReducer(logger(reducer), {
     products: [],
     loading: true,
