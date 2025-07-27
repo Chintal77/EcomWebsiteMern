@@ -1,16 +1,56 @@
 import { useParams } from 'react-router-dom';
-import data from '../data';
+import axios from 'axios';
 import '../index.css';
-import { useState } from 'react';
+import { useEffect, useReducer, useState } from 'react';
+
+const reducer = (state, action) => {
+  switch (action.type) {
+    case 'FETCH_REQUEST':
+      return { ...state, loading: true, error: '' };
+    case 'FETCH_SUCCESS':
+      return { ...state, product: action.payload, loading: false };
+    case 'FETCH_FAIL':
+      return { ...state, loading: false, error: action.payload };
+    default:
+      return state;
+  }
+};
+
+const getLogger = () => {
+  if (process.env.NODE_ENV === 'development') {
+    return require('use-reducer-logger').default;
+  }
+  return (r) => r;
+};
 
 function ProductScreen() {
   const { slug } = useParams();
-  const product = data.products.find((p) => p.slug === slug);
+  const logger = getLogger();
+
+  const [{ product, loading, error }, dispatch] = useReducer(logger(reducer), {
+    product: {},
+    loading: true,
+    error: '',
+  });
+
   const [quantity, setQuantity] = useState(1);
 
-  if (!product) {
-    return <div className="not-found">Product not found.</div>;
-  }
+  useEffect(() => {
+    const fetchProduct = async () => {
+      dispatch({ type: 'FETCH_REQUEST' });
+      try {
+        const result = await axios.get(`/api/products/${slug}`);
+        dispatch({ type: 'FETCH_SUCCESS', payload: result.data });
+      } catch (err) {
+        dispatch({ type: 'FETCH_FAIL', payload: err.message });
+      }
+    };
+    fetchProduct();
+  }, [slug]);
+
+  if (loading) return <div className="message">Loading product details...</div>;
+  if (error) return <div className="error">{error}</div>;
+  if (!product) return <div className="not-found">Product not found.</div>;
 
   const discountPercentage = 20;
   const discountAmount = Math.round((product.price * discountPercentage) / 100);
@@ -31,7 +71,7 @@ function ProductScreen() {
           <h1 className="product-title">{product.name}</h1>
 
           <div className="product-rating">
-            ⭐ 4.3 <span>(112 reviews)</span>
+            ⭐ {product.rating} <span>({product.numReviews} reviews)</span>
           </div>
 
           <div className="price-block">

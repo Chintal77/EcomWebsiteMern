@@ -35,6 +35,10 @@ function App() {
           </Routes>
         </main>
       </div>
+
+      <footer className="footer">
+        &copy; {new Date().getFullYear()} ShopFusion. All rights reserved.
+      </footer>
     </BrowserRouter>
   );
 }

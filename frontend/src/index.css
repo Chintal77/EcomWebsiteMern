@@ -631,3 +631,14 @@ body {
     text-align: center;
   }
 }
+
+.product-rating {
+  color: #f39c12;
+  font-weight: bold;
+  margin: 0.5rem 0;
+}
+
+.product-rating span {
+  color: #555;
+  font-weight: normal;
+}

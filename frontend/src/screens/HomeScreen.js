@@ -81,6 +81,10 @@ function HomeScreen() {
                     <p className="product-discount">
                       You save ₹{discountAmount.toLocaleString('en-IN')}
                     </p>
+                    <p className="product-rating">
+                      ⭐ {product.rating}{' '}
+                      <span>({product.numReviews} reviews)</span>
+                    </p>
                     <button className="btn-cart">Add to Cart</button>
                   </div>
                 </div>
@@ -89,10 +93,6 @@ function HomeScreen() {
           )}
         </div>
       </main>
-
-      <footer className="footer">
-        &copy; {new Date().getFullYear()} ShopFusion. All rights reserved.
-      </footer>
     </div>
   );
 }
