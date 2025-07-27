@@ -100,7 +100,14 @@ function CartScreen({ cartItems, setCartItems }) {
                 <div className="cart-item-card" key={product.slug}>
                   <img src={product.image} alt={product.name} />
                   <div className="item-info">
-                    <h4>{product.name}</h4>
+                    <h4>
+                      <Link
+                        to={`/product/${product.slug}`}
+                        className="product-link"
+                      >
+                        {product.name}
+                      </Link>
+                    </h4>
                     <p>
                       <span className="label">Original:</span>{' '}
                       <s>₹{product.price.toLocaleString('en-IN')}</s>

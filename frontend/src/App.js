@@ -47,7 +47,7 @@ function App() {
               }
             />
             <Route
-              path="/products/:slug"
+              path="/product/:slug"
               element={
                 <ProductScreen
                   cartItems={cartItems}

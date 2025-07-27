@@ -124,7 +124,7 @@ function HomeScreen({ cartItems, setCartItems }) {
                   />
                   <div className="product-info">
                     <h3 className="product-name">
-                      <Link to={`/products/${product.slug}`}>
+                      <Link to={`/product/${product.slug}`}>
                         {product.name}
                       </Link>
                     </h3>
