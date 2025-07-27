@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useReducer, useState, useCallback } from 'react';
 import logger from 'use-reducer-logger';
 import '../HomeScreen.css';
 
@@ -27,13 +27,12 @@ function HomeScreen({ cartItems, setCartItems }) {
   const [showCart, setShowCart] = useState(false);
   const [showRecovery, setShowRecovery] = useState(false);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     dispatch({ type: 'FETCH_REQUEST' });
     try {
       const result = await axios.get('/api/products');
       dispatch({ type: 'FETCH_SUCCESS', payload: result.data });
 
-      // If we were previously in error state, show recovery message
       if (error) {
         setShowRecovery(true);
         setTimeout(() => setShowRecovery(false), 3000);
@@ -41,23 +40,22 @@ function HomeScreen({ cartItems, setCartItems }) {
     } catch (err) {
       dispatch({ type: 'FETCH_FAIL', payload: err.message });
     }
-  };
+  }, [error]); // 👈 Add dependencies here
 
   useEffect(() => {
     document.title = 'ShopFusion';
     fetchData();
-  }, []);
+  }, [fetchData]);
 
-  // Polling retry if there's an error
   useEffect(() => {
     if (error) {
       const retryInterval = setInterval(() => {
         fetchData();
-      }, 5000); // Retry every 5 seconds
+      }, 5000);
 
       return () => clearInterval(retryInterval);
     }
-  }, [error]);
+  }, [error, fetchData]);
 
   const handleAddToCart = (product) => {
     setShowCart(true);
@@ -74,7 +72,7 @@ function HomeScreen({ cartItems, setCartItems }) {
 
   return (
     <div className="container">
-      {showCart && (
+      {(showCart || cartCount > 0) && (
         <Link to="/cart" className="cart-indicator">
           🛒 <span className="cart-count">{cartCount}</span>
         </Link>
