@@ -52,7 +52,8 @@ function ProductScreen() {
   if (error) return <div className="error">{error}</div>;
   if (!product) return <div className="not-found">Product not found.</div>;
 
-  const discountPercentage = 20;
+  const discountMatch = product.badge?.match(/(\d+)%/);
+  const discountPercentage = discountMatch ? parseInt(discountMatch[1]) : 0;
   const discountAmount = Math.round((product.price * discountPercentage) / 100);
   const finalPrice = product.price - discountAmount;
 
@@ -68,6 +69,7 @@ function ProductScreen() {
         </div>
 
         <div className="product-right">
+          {product.badge && <span className="badge">{product.badge}</span>}
           <h1 className="product-title">{product.name}</h1>
 
           <div className="product-rating">

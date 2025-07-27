@@ -11,6 +11,7 @@ const data = {
       rating: 4.5,
       numReviews: 10,
       description: 'high quality shirt',
+      badge: '15% OFF',
     },
     {
       name: 'Nik Slim shirt',
@@ -23,6 +24,7 @@ const data = {
       rating: 4.5,
       numReviews: 10,
       description: 'high quality shirt',
+      badge: '12% OFF',
     },
     {
       name: 'Nke Slim shirt',
@@ -35,6 +37,7 @@ const data = {
       rating: 4.5,
       numReviews: 10,
       description: 'high quality shirt',
+      badge: '20% OFF',
     },
     {
       name: 'Nike Slim shirt',
@@ -47,6 +50,7 @@ const data = {
       rating: 4.5,
       numReviews: 10,
       description: 'high quality shirt',
+      badge: '19% OFF',
     },
     {
       name: 'Nike Slim shirt',
@@ -59,6 +63,7 @@ const data = {
       rating: 4.5,
       numReviews: 10,
       description: 'high quality shirt',
+      badge: '15% OFF',
     },
     {
       name: 'Nike Slim shirt',
@@ -71,6 +76,7 @@ const data = {
       rating: 4.5,
       numReviews: 10,
       description: 'high quality shirt',
+      badge: '17% OFF',
     },
     {
       name: 'Nike Slim shirt',
@@ -83,6 +89,7 @@ const data = {
       rating: 4.5,
       numReviews: 10,
       description: 'high quality shirt',
+      badge: '27% OFF',
     },
     {
       name: 'Nike Slim shirt',
@@ -95,6 +102,7 @@ const data = {
       rating: 4.5,
       numReviews: 10,
       description: 'high quality shirt',
+      badge: '13% OFF',
     },
     {
       name: 'Nike Slim shirt',
@@ -107,6 +115,7 @@ const data = {
       rating: 4.5,
       numReviews: 10,
       description: 'high quality shirt',
+      badge: '15% OFF',
     },
     {
       name: 'Adidas Fit Shirt',
@@ -119,6 +128,7 @@ const data = {
       rating: 4.0,
       numReviews: 10,
       description: 'high quality product',
+      badge: '25% OFF',
     },
     {
       name: 'Nike Slim Pant',
@@ -131,6 +141,7 @@ const data = {
       rating: 4.5,
       numReviews: 14,
       description: 'high quality product',
+      badge: '10% OFF',
     },
     {
       name: 'Adidas Fit Pant',
@@ -143,6 +154,7 @@ const data = {
       rating: 4.5,
       numReviews: 10,
       description: 'high quality product',
+      badge: '25% OFF',
     },
     {
       name: 'Puma Pant',
@@ -155,6 +167,7 @@ const data = {
       rating: 4.5,
       numReviews: 35,
       description: 'high quality product',
+      badge: '20% OFF',
     },
   ],
 };

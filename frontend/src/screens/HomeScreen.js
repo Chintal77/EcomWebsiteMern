@@ -50,7 +50,10 @@ function HomeScreen() {
             <p className="error">{error}</p>
           ) : (
             products.map((product) => {
-              const discountPercentage = 20;
+              const discountMatch = product.badge?.match(/(\d+)%/);
+              const discountPercentage = discountMatch
+                ? parseInt(discountMatch[1])
+                : 0;
               const discountAmount = Math.round(
                 (product.price * discountPercentage) / 100
               );
@@ -58,7 +61,9 @@ function HomeScreen() {
 
               return (
                 <div className="product-card" key={product.slug}>
-                  <span className="badge">20% OFF</span>
+                  {product.badge && (
+                    <span className="badge">{product.badge}</span>
+                  )}
                   <img
                     src={product.image}
                     alt={product.name}
