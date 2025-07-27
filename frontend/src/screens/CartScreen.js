@@ -67,6 +67,37 @@ function CartScreen({ cartItems, setCartItems }) {
     }
   };
 
+  const handleDeleteItem = (slug) => {
+    if (window.confirm('Remove this item from the cart?')) {
+      const updatedCart = { ...cartItems };
+      delete updatedCart[slug];
+      setCartItems(updatedCart);
+    }
+  };
+
+  const increaseQuantity = (slug) => {
+    const product = products.find((p) => p.slug === slug);
+    const currentQty = cartItems[slug];
+
+    if (product && currentQty < product.countInStock) {
+      setCartItems((prev) => ({
+        ...prev,
+        [slug]: prev[slug] + 1,
+      }));
+    } else {
+      alert(
+        `❗ Only ${product.countInStock} item(s) available for "${product.name}". You can't add more.`
+      );
+    }
+  };
+
+  const decreaseQuantity = (slug) => {
+    setCartItems((prev) => ({
+      ...prev,
+      [slug]: Math.max(1, prev[slug] - 1),
+    }));
+  };
+
   return (
     <div className="cart-container">
       <h2 className="cart-heading">🛒 Your Shopping Cart</h2>
@@ -116,9 +147,40 @@ function CartScreen({ cartItems, setCartItems }) {
                       <span className="label">Now:</span> ₹
                       {finalPrice.toLocaleString('en-IN')}
                     </p>
-                    <p>
-                      <span className="label">Qty:</span> {quantity}
-                    </p>
+
+                    <div className="quantity-controls">
+                      <span className="label">Qty:</span>
+                      <button
+                        className="qty-btn"
+                        onClick={() => decreaseQuantity(product.slug)}
+                      >
+                        ➖
+                      </button>
+                      <span className="qty-value">{quantity}</span>
+                      <button
+                        className="qty-btn"
+                        onClick={() => increaseQuantity(product.slug)}
+                        disabled={
+                          cartItems[product.slug] >= product.countInStock
+                        }
+                        title={
+                          cartItems[product.slug] >= product.countInStock
+                            ? `Only ${product.countInStock} in stock`
+                            : ''
+                        }
+                      >
+                        ➕
+                      </button>
+
+                      <button
+                        className="delete-btn"
+                        onClick={() => handleDeleteItem(product.slug)}
+                        title="Remove item"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+
                     <p>
                       <span className="label">Subtotal:</span> ₹
                       {subtotal.toLocaleString('en-IN')}
