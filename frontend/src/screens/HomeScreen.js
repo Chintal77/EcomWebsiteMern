@@ -85,7 +85,22 @@ function HomeScreen() {
                       ⭐ {product.rating}{' '}
                       <span>({product.numReviews} reviews)</span>
                     </p>
-                    <button className="btn-cart">Add to Cart</button>
+                    <button
+                      className="btn-cart"
+                      disabled={product.countInStock === 0}
+                      style={{
+                        backgroundColor:
+                          product.countInStock === 0 ? '#ccc' : '',
+                        cursor:
+                          product.countInStock === 0
+                            ? 'not-allowed'
+                            : 'pointer',
+                      }}
+                    >
+                      {product.countInStock === 0
+                        ? 'Out of Stock'
+                        : 'Add to Cart'}
+                    </button>
                   </div>
                 </div>
               );

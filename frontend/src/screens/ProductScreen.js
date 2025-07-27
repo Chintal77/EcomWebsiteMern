@@ -90,7 +90,13 @@ function ProductScreen() {
           <p className="description">{product.description}</p>
 
           <div className="extra-info">
-            <p className="stock">✅ In Stock</p>
+            <p
+              className={`stock ${
+                product.countInStock > 0 ? 'in-stock' : 'out-of-stock'
+              }`}
+            >
+              {product.countInStock > 0 ? '✅ In Stock' : '❌ Out of Stock'}
+            </p>
             <p>
               Sold by <strong>ShopFusion Retail</strong>
             </p>
@@ -117,8 +123,27 @@ function ProductScreen() {
           </div>
 
           <div className="button-group">
-            <button className="btn-cart">🛒 Add to Cart</button>
-            <button className="btn-buy">⚡ Buy Now</button>
+            <button
+              className="btn-cart"
+              disabled={product.countInStock === 0}
+              style={{
+                backgroundColor: product.countInStock === 0 ? '#ccc' : '',
+                cursor: product.countInStock === 0 ? 'not-allowed' : 'pointer',
+              }}
+            >
+              🛒 {product.countInStock === 0 ? 'Add to Cart' : 'Add to Cart'}
+            </button>
+
+            <button
+              className="btn-buy"
+              disabled={product.countInStock === 0}
+              style={{
+                backgroundColor: product.countInStock === 0 ? '#ccc' : '',
+                cursor: product.countInStock === 0 ? 'not-allowed' : 'pointer',
+              }}
+            >
+              ⚡ {product.countInStock === 0 ? 'Buy Now' : 'Buy Now'}
+            </button>
           </div>
 
           <div className="payment-methods">
