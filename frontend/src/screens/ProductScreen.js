@@ -120,6 +120,68 @@ function ProductScreen({ cartItems, setCartItems }) {
 
         <p className="product-description">{product.description}</p>
 
+        {/* Highlights */}
+        {product.highlights && (
+          <ul className="product-highlights">
+            {product.highlights.map((point, index) => (
+              <li key={index}>🧵 {point}</li>
+            ))}
+          </ul>
+        )}
+
+        {/* Size Info */}
+        {product.sizeFit && (
+          <div className="size-fit">
+            <p>
+              <strong>Size & Fit:</strong> {product.sizeFit}
+            </p>
+          </div>
+        )}
+
+        {/* Specifications Table */}
+        {product.specifications && (
+          <table className="spec-table">
+            <tbody>
+              {Object.entries(product.specifications).map(([key, value]) => (
+                <tr key={key}>
+                  <td className="spec-key">{key.toUpperCase()}</td>
+                  <td className="spec-value">{value}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+
+        {/* Additional Info */}
+        <div className="extra-info">
+          {product.brand && (
+            <p>
+              <strong>Brand:</strong> {product.brand}
+            </p>
+          )}
+          {product.category && (
+            <p>
+              <strong>Category:</strong> {product.category}
+            </p>
+          )}
+          {product.seller && (
+            <p>
+              <strong>Seller:</strong> {product.seller}
+            </p>
+          )}
+          {product.delivery && (
+            <p>
+              <strong>Delivery:</strong> {product.delivery}
+            </p>
+          )}
+          {product.returnPolicy && (
+            <p>
+              <strong>Return Policy:</strong> {product.returnPolicy}
+            </p>
+          )}
+        </div>
+
+        {/* Stock */}
         <p
           className={`stock ${
             product.countInStock > 0 ? 'in-stock' : 'out-of-stock'
@@ -128,6 +190,7 @@ function ProductScreen({ cartItems, setCartItems }) {
           {product.countInStock > 0 ? '✅ In Stock' : '❌ Out of Stock'}
         </p>
 
+        {/* Cart Button */}
         <button
           className={`btn-cart ${
             product.countInStock === 0
