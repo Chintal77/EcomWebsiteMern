@@ -3,6 +3,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import seedRouter from './routes/seedRoutes.js';
+import productRouter from './routes/productRoutes.js';
 
 dotenv.config();
 mongoose
@@ -18,9 +19,7 @@ const app = express();
 app.use('/api/seed', seedRouter);
 
 // Route to get all products
-app.get('/api/products', (req, res) => {
-  res.send(data.products);
-});
+app.use('/api/products', productRouter);
 
 // Route to get a single product by slug
 app.get('/api/products/:slug', (req, res) => {

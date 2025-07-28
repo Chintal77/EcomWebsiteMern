@@ -61,7 +61,7 @@ function HomeScreen({ cartItems, setCartItems }) {
     const existingQty = cartItems[product.slug] || 0;
 
     try {
-      const { data } = await axios.get(`/api/products/${product.slug}`);
+      const { data } = await axios.get(`/api/products/${product._id}`);
       if (existingQty >= data.countInStock) {
         alert('❌ Cannot add more. Stock limit reached!');
         return;
@@ -134,9 +134,7 @@ function HomeScreen({ cartItems, setCartItems }) {
                   />
                   <div className="product-info">
                     <h3 className="product-name">
-                      <Link to={`/product/${product.slug}`}>
-                        {product.name}
-                      </Link>
+                      <Link to={`/product/${product._id}`}>{product.name}</Link>
                     </h3>
                     <p className="product-price">
                       <span className="original-price">
