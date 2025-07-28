@@ -2,6 +2,7 @@ import data from './data.js';
 import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import seedRouter from './routes/seedRoutes.js';
 
 dotenv.config();
 mongoose
@@ -14,6 +15,7 @@ mongoose
   });
 
 const app = express();
+app.use('/api/seed', seedRouter);
 
 // Route to get all products
 app.get('/api/products', (req, res) => {
