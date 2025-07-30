@@ -48,9 +48,42 @@ function CheckoutScreen({ cartItems, setCartItems }) {
   }, 0);
 
   const handlePlaceOrder = () => {
-    alert('✅ Order placed successfully!');
+    const order = {
+      date: new Date().toLocaleString(),
+      items: productsInCart.map((product) => {
+        const quantity = cartItems[product.slug];
+        const discountMatch = product.badge?.match(/(\d+)%/);
+        const discount = discountMatch ? parseInt(discountMatch[1]) : 0;
+        const finalPrice =
+          product.price - Math.round((product.price * discount) / 100);
+
+        return {
+          slug: product.slug,
+          name: product.name,
+          image: product.image,
+          quantity,
+          price: finalPrice,
+        };
+      }),
+      total: totalAmount,
+    };
+
+    const existingOrders = JSON.parse(
+      localStorage.getItem(`orders_${userInfo.email}`) || '[]'
+    );
+    existingOrders.push(order);
+    localStorage.setItem(
+      `orders_${userInfo.email}`,
+      JSON.stringify(existingOrders)
+    );
+
+    // ✅ Clear cart from both state and localStorage
     setCartItems({});
-    navigate('/');
+    localStorage.removeItem(`cartItems_${userInfo.email}`);
+
+    setCartItems({});
+    localStorage.removeItem(`cartItems_${userInfo.email}`);
+    navigate('/order-success');
   };
 
   if (!userInfo.name) {

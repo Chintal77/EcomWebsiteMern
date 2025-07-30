@@ -8,6 +8,8 @@ import SignupScreen from './screens/SignupScreen';
 import CartScreen from './screens/CartScreen';
 import CheckoutScreen from './screens/CheckoutScreen';
 import Header from './components/Header'; // ✅ import Header
+import MyOrdersScreen from './screens/MyOrdersScreen';
+import OrderSuccessScreen from './screens/OrderSuccessScreen';
 
 function App() {
   const [cartItems, setCartItems] = useState(() => {
@@ -57,6 +59,10 @@ function App() {
                 />
               }
             />
+
+            <Route path="/orders" element={<MyOrdersScreen />} />
+
+            <Route path="/order-success" element={<OrderSuccessScreen />} />
           </Routes>
         </main>
         <footer className="footer">
