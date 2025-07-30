@@ -10,7 +10,6 @@ function MyOrdersScreen() {
   useEffect(() => {
     document.title = 'Shopfusion | My Orders';
 
-    // Simulated fetch from localStorage or backend
     const savedOrders = JSON.parse(
       localStorage.getItem(`orders_${userInfo.email}`) || '[]'
     );
@@ -55,26 +54,23 @@ function MyOrdersScreen() {
                     {(item.price * item.quantity).toLocaleString('en-IN')}
                   </p>
                 </div>
-
-                <div class="order-header">
-                  <div>
-                    <div class="order-id">Order #11223981</div>
-                    <div class="order-date">Placed on: 2025-07-30</div>
-                  </div>
-                  <div class="order-status">Yet to Dispatch</div>
-                </div>
-
-                <div class="shipping-info">
-                  <strong>Shipping To:</strong>
-                  <br />
-                  John Doe
-                  <br />
-                  123 Main Street, Mumbai, Maharashtra - 400001
-                  <br />
-                  Phone: +91-9876543210
-                </div>
               </div>
             ))}
+
+            {/* ✅ Dynamic Shipping Info */}
+            {order.deliveryInfo && (
+              <div className="shipping-info">
+                <strong>Shipping To:</strong>
+                <br />
+                {order.deliveryInfo.fullName}
+                <br />
+                {order.deliveryInfo.address},{order.deliveryInfo.landmark},{' '}
+                {order.deliveryInfo.city}, {order.deliveryInfo.state} -{' '}
+                {order.deliveryInfo.pin}
+                <br />
+                Phone: {order.deliveryInfo.phone}
+              </div>
+            )}
 
             <div className="order-total">
               <strong>Total: ₹{order.total.toLocaleString('en-IN')}</strong>

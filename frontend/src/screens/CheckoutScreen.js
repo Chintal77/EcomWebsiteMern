@@ -7,6 +7,13 @@ function CheckoutScreen({ cartItems, setCartItems }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
+  const [landmark, setLandmark] = useState('');
+  const [city, setCity] = useState('');
+  const [stateName, setStateName] = useState('');
+  const [pin, setPin] = useState('');
+  const [country, setCountry] = useState('');
 
   const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
 
@@ -50,6 +57,17 @@ function CheckoutScreen({ cartItems, setCartItems }) {
   const handlePlaceOrder = () => {
     const order = {
       date: new Date().toLocaleString(),
+      deliveryInfo: {
+        name: userInfo.name,
+        email: userInfo.email,
+        phone,
+        address,
+        landmark,
+        city,
+        state: stateName,
+        pin,
+        country,
+      },
       items: productsInCart.map((product) => {
         const quantity = cartItems[product.slug];
         const discountMatch = product.badge?.match(/(\d+)%/);
@@ -140,34 +158,85 @@ function CheckoutScreen({ cartItems, setCartItems }) {
           {/* RIGHT: Summary */}
           <div className="summary-box">
             <h3 className="section-title">📦 Delivery Info</h3>
-            <div className="delivery-info">
-              <p>
-                <strong>Name:</strong> {userInfo.name}
-              </p>
-              <p>
-                <strong>Email:</strong> {userInfo.email}
-              </p>
-              <p>
-                <strong>Phone:</strong> +91-9876543210
-              </p>
-              <p>
-                <strong>Address:</strong> 123 Example Street
-              </p>
-              <p>
-                <strong>Landmark:</strong> Near City Mall
-              </p>
-              <p>
-                <strong>City:</strong> Mumbai
-              </p>
-              <p>
-                <strong>State:</strong> Maharashtra
-              </p>
-              <p>
-                <strong>PIN Code:</strong> 400001
-              </p>
-              <p>
-                <strong>Country:</strong> India
-              </p>
+            <div className="delivery-info-form">
+              <div className="form-group">
+                <label>Name:</label>
+                <input type="text" value={userInfo.name} disabled />
+              </div>
+
+              <div className="form-group">
+                <label>Email:</label>
+                <input type="email" value={userInfo.email} disabled />
+              </div>
+
+              <div className="form-group">
+                <label>Phone:</label>
+                <input
+                  type="text"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Address:</label>
+                <input
+                  type="text"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Landmark:</label>
+                <input
+                  type="text"
+                  value={landmark}
+                  onChange={(e) => setLandmark(e.target.value)}
+                />
+              </div>
+
+              <div className="form-group">
+                <label>City:</label>
+                <input
+                  type="text"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>State:</label>
+                <input
+                  type="text"
+                  value={stateName}
+                  onChange={(e) => setStateName(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>PIN Code:</label>
+                <input
+                  type="text"
+                  value={pin}
+                  onChange={(e) => setPin(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Country:</label>
+                <input
+                  type="text"
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                  required
+                />
+              </div>
             </div>
 
             <h3 className="section-title">💳 Payment Summary</h3>

@@ -1,3 +1,4 @@
+// ✅ Store.js
 import { createContext, useReducer } from 'react';
 
 export const Store = createContext();
@@ -23,7 +24,16 @@ const initialState = {
   cart: {
     shippingAddress: localStorage.getItem('shippingAddress')
       ? JSON.parse(localStorage.getItem('shippingAddress'))
-      : { location: {} },
+      : {
+          fullName: '',
+          phone: '',
+          address: '',
+          landmark: '',
+          city: '',
+          state: '',
+          pin: '',
+          country: '',
+        },
     paymentMethod: localStorage.getItem('paymentMethod') || '',
     cartItems: getInitialCartItems(),
   },
@@ -54,10 +64,21 @@ function reducer(state, action) {
           `cartItems_${userInfo.email}`,
           JSON.stringify(cartItems)
         );
-        window.dispatchEvent(new Event('storage')); // to update header cart count
+        window.dispatchEvent(new Event('storage'));
       }
 
       return { ...state, cart: { ...state.cart, cartItems } };
+    }
+
+    case 'SAVE_SHIPPING_ADDRESS': {
+      localStorage.setItem('shippingAddress', JSON.stringify(action.payload));
+      return {
+        ...state,
+        cart: {
+          ...state.cart,
+          shippingAddress: action.payload,
+        },
+      };
     }
 
     case 'USER_SIGNIN':
