@@ -6,6 +6,7 @@ import ProductScreen from './screens/ProductScreen';
 import LoginScreen from './screens/LoginScreen';
 import SignupScreen from './screens/SignupScreen';
 import CartScreen from './screens/CartScreen';
+import CheckoutScreen from './screens/CheckoutScreen';
 
 function App() {
   const [cartItems, setCartItems] = useState(() => {
@@ -61,6 +62,16 @@ function App() {
               path="/cart"
               element={
                 <CartScreen cartItems={cartItems} setCartItems={setCartItems} />
+              }
+            />
+            import CheckoutScreen from './screens/CheckoutScreen'; // add this
+            <Route
+              path="/checkout"
+              element={
+                <CheckoutScreen
+                  cartItems={cartItems}
+                  setCartItems={setCartItems}
+                />
               }
             />
           </Routes>
