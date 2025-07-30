@@ -5,6 +5,7 @@ import './Header.css';
 function Header() {
   const [userInfo, setUserInfo] = useState(null);
   const [cartCount, setCartCount] = useState(0);
+  const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -37,7 +38,12 @@ function Header() {
   const logoutHandler = () => {
     localStorage.removeItem('userInfo');
     setUserInfo(null);
+    setShowDropdown(false);
     navigate('/');
+  };
+
+  const toggleDropdown = () => {
+    setShowDropdown((prev) => !prev);
   };
 
   return (
@@ -55,14 +61,43 @@ function Header() {
                   <span className="cart-count">{cartCount}</span>
                 )}
               </Link>
-              <span className="nav-user">
-                {userInfo.isAdmin
-                  ? `👑 Admin: ${userInfo.name}`
-                  : `👋 ${userInfo.name}`}
-              </span>
-              <button className="nav-btn" onClick={logoutHandler}>
-                🚪 Logout
-              </button>
+
+              <div className="user-dropdown">
+                <button className="nav-btn" onClick={toggleDropdown}>
+                  {userInfo.isAdmin
+                    ? `👑 Admin: ${userInfo.name}`
+                    : `👋 ${userInfo.name}`}{' '}
+                  ▾
+                </button>
+
+                {showDropdown && (
+                  <ul className="dropdown-menu">
+                    {userInfo.isAdmin ? (
+                      <>
+                        <li onClick={() => navigate('/admin/dashboard')}>
+                          🧾 Admin Dashboard
+                        </li>
+                        <li onClick={() => navigate('/admin/products')}>
+                          📦 Manage Products
+                        </li>
+                        <li onClick={() => navigate('/admin/reports')}>
+                          📊 Reports
+                        </li>
+                      </>
+                    ) : (
+                      <>
+                        <li onClick={() => navigate('/orders')}>
+                          📜 My Orders
+                        </li>
+                        <li onClick={() => navigate('/profile')}>
+                          ⚙️ Profile Settings
+                        </li>
+                      </>
+                    )}
+                    <li onClick={logoutHandler}>🚪 Logout</li>
+                  </ul>
+                )}
+              </div>
             </>
           ) : null}
         </nav>
