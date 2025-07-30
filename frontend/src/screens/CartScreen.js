@@ -25,18 +25,18 @@ function CartScreen({ cartItems, setCartItems }) {
 
   const [productsInCart, setProductsInCart] = useState([]);
   const navigate = useNavigate();
-  const userInfo = localStorage.getItem('userInfo');
+  const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 
   useEffect(() => {
-    document.title = 'Shopfusion | Cart';
+    document.title = 'ShopFusion | Cart';
   }, []);
 
   useEffect(() => {
     const fetchProducts = async () => {
       dispatch({ type: 'FETCH_REQUEST' });
       try {
-        const result = await axios.get('/api/products');
-        dispatch({ type: 'FETCH_SUCCESS', payload: result.data });
+        const { data } = await axios.get('/api/products');
+        dispatch({ type: 'FETCH_SUCCESS', payload: data });
       } catch (err) {
         dispatch({ type: 'FETCH_FAIL', payload: err.message });
       }
@@ -52,141 +52,127 @@ function CartScreen({ cartItems, setCartItems }) {
     setProductsInCart(filteredProducts);
   }, [products, cartItems]);
 
-  const cartIsEmpty = productsInCart.length === 0;
-
-  const totalAmount = productsInCart.reduce((acc, product) => {
-    const quantity = cartItems[product.slug];
-    const discountMatch = product.badge?.match(/(\d+)%/);
-    const discountPercentage = discountMatch ? parseInt(discountMatch[1]) : 0;
-    const finalPrice =
-      product.price - Math.round((product.price * discountPercentage) / 100);
-    return acc + finalPrice * quantity;
-  }, 0);
-
-  const handleEmptyCart = () => {
-    if (window.confirm('Are you sure you want to empty the cart?')) {
-      setCartItems({});
-    }
-  };
-
-  const handleDeleteItem = (slug) => {
-    if (window.confirm('Remove this item from the cart?')) {
-      const updatedCart = { ...cartItems };
-      delete updatedCart[slug];
-      setCartItems(updatedCart);
-    }
-  };
-
-  const increaseQuantity = (slug) => {
-    const product = products.find((p) => p.slug === slug);
-    const currentQty = cartItems[slug];
-
-    if (product && currentQty < product.countInStock) {
-      setCartItems((prev) => ({
-        ...prev,
-        [slug]: prev[slug] + 1,
-      }));
-    } else {
-      alert(
-        `❗ Only ${product.countInStock} item(s) available for "${product.name}". You can't add more.`
+  const updateLocalStorage = (updatedCart) => {
+    if (userInfo?.email) {
+      localStorage.setItem(
+        `cartItems_${userInfo.email}`,
+        JSON.stringify(updatedCart)
       );
+      window.dispatchEvent(new Event('storage'));
     }
   };
 
-  const decreaseQuantity = (slug) => {
-    setCartItems((prev) => ({
-      ...prev,
-      [slug]: Math.max(1, prev[slug] - 1),
-    }));
+  const updateQuantity = (slug, type) => {
+    setCartItems((prev) => {
+      const currentQty = prev[slug];
+      const product = products.find((p) => p.slug === slug);
+      const maxQty = product?.countInStock || 1;
+
+      const newQty =
+        type === 'inc'
+          ? Math.min(currentQty + 1, maxQty)
+          : Math.max(currentQty - 1, 1);
+
+      const updatedCart = { ...prev, [slug]: newQty };
+      updateLocalStorage(updatedCart);
+      return updatedCart;
+    });
+  };
+
+  const removeItem = (slug) => {
+    if (window.confirm('Remove this item?')) {
+      const updated = { ...cartItems };
+      delete updated[slug];
+      setCartItems(updated);
+      updateLocalStorage(updated);
+    }
+  };
+
+  const emptyCart = () => {
+    if (window.confirm('Clear entire cart?')) {
+      setCartItems({});
+      updateLocalStorage({});
+    }
   };
 
   const handleCheckout = () => {
-    if (userInfo) {
-      navigate('/checkout');
-    } else {
-      navigate('/login?redirect=/checkout');
-    }
+    userInfo ? navigate('/checkout') : navigate('/login?redirect=/checkout');
   };
+
+  const totalAmount = productsInCart.reduce((acc, product) => {
+    const quantity = cartItems[product.slug];
+    const discount = parseInt(product.badge?.match(/(\d+)%/)?.[1]) || 0;
+    const discountedPrice =
+      product.price - Math.round((product.price * discount) / 100);
+    return acc + discountedPrice * quantity;
+  }, 0);
 
   return (
     <div className="cart-container">
-      <h2 className="cart-heading">🛒 Your Shopping Cart</h2>
+      <h1 className="cart-heading">🛒 Your Cart</h1>
 
       {loading ? (
-        <p className="cart-loading">Loading cart items...</p>
+        <p className="cart-loading">Loading...</p>
       ) : error ? (
-        <p className="cart-error">❌ Error: {error}</p>
-      ) : cartIsEmpty ? (
+        <p className="cart-error">❌ {error}</p>
+      ) : productsInCart.length === 0 ? (
         <div className="cart-empty">
-          <h3>🛍️ Oops! Your cart is empty</h3>
+          <h2>Your cart is empty 😢</h2>
           <Link to="/" className="btn-shop">
-            Go Back to Shopping
+            🛍️ Continue Shopping
           </Link>
         </div>
       ) : (
         <div className="cart-content">
           <div className="cart-items">
             {productsInCart.map((product) => {
-              const quantity = cartItems[product.slug];
-              const discountMatch = product.badge?.match(/(\d+)%/);
-              const discountPercentage = discountMatch
-                ? parseInt(discountMatch[1])
-                : 0;
-              const finalPrice =
-                product.price -
-                Math.round((product.price * discountPercentage) / 100);
-              const subtotal = finalPrice * quantity;
+              const qty = cartItems[product.slug];
+              const discount =
+                parseInt(product.badge?.match(/(\d+)%/)?.[1]) || 0;
+              const discountedPrice =
+                product.price - Math.round((product.price * discount) / 100);
+              const subtotal = discountedPrice * qty;
 
               return (
-                <div className="cart-item-card" key={product.slug}>
+                <div key={product.slug} className="cart-item-card">
                   <img src={product.image} alt={product.name} />
                   <div className="item-info">
-                    <h4>
-                      <Link
-                        to={`/product/${product.slug}`}
-                        className="product-link"
-                      >
-                        {product.name}
-                      </Link>
-                    </h4>
+                    <Link
+                      to={`/product/${product._id}`}
+                      className="product-link"
+                    >
+                      <h4>{product.name}</h4>
+                    </Link>
                     <p>
-                      <span className="label">Original:</span>{' '}
-                      <s>₹{product.price.toLocaleString('en-IN')}</s>
-                    </p>
-                    <p>
-                      <span className="label">Now:</span> ₹
-                      {finalPrice.toLocaleString('en-IN')}
+                      <span className="label">Price:</span>
+                      <s>₹{product.price.toLocaleString('en-IN')}</s>{' '}
+                      <strong className="text-green-600">
+                        ₹{discountedPrice.toLocaleString('en-IN')}
+                      </strong>
                     </p>
 
                     <div className="quantity-controls">
                       <div className="qty-group">
-                        <span className="label">Qty:</span>
                         <button
+                          onClick={() => updateQuantity(product.slug, 'dec')}
                           className="qty-btn"
-                          onClick={() => decreaseQuantity(product.slug)}
                         >
                           ➖
                         </button>
-                        <span className="qty-value">{quantity}</span>
+                        <span className="qty-value">{qty}</span>
                         <button
+                          onClick={() => updateQuantity(product.slug, 'inc')}
                           className="qty-btn"
-                          onClick={() => increaseQuantity(product.slug)}
-                          disabled={
-                            cartItems[product.slug] >= product.countInStock
-                          }
-                          title={
-                            cartItems[product.slug] >= product.countInStock
-                              ? `Only ${product.countInStock} in stock`
-                              : ''
-                          }
+                          disabled={qty >= product.countInStock}
+                          title={`Max: ${product.countInStock}`}
                         >
                           ➕
                         </button>
                       </div>
+
                       <button
+                        onClick={() => removeItem(product.slug)}
                         className="delete-btn"
-                        onClick={() => handleDeleteItem(product.slug)}
-                        title="Remove item"
                       >
                         🗑️
                       </button>
@@ -203,12 +189,12 @@ function CartScreen({ cartItems, setCartItems }) {
           </div>
 
           <div className="cart-summary">
-            <h3>Total Amount</h3>
+            <h3>Order Summary</h3>
             <h2>₹{totalAmount.toLocaleString('en-IN')}</h2>
-            <button className="checkout-btn" onClick={handleCheckout}>
-              ✅ Proceed to Checkout
+            <button onClick={handleCheckout} className="checkout-btn">
+              ✅ Checkout
             </button>
-            <button className="empty-btn" onClick={handleEmptyCart}>
+            <button onClick={emptyCart} className="empty-btn">
               🗑️ Empty Cart
             </button>
           </div>

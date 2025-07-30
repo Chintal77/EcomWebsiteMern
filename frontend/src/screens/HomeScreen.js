@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useEffect, useReducer, useState, useCallback } from 'react';
 import logger from 'use-reducer-logger';
@@ -24,8 +24,11 @@ function HomeScreen({ cartItems, setCartItems }) {
     error: '',
   });
 
-  const [showCart, setShowCart] = useState(false);
+  const [, setShowCart] = useState(false);
   const [showRecovery, setShowRecovery] = useState(false);
+  const [userInfo, setUserInfo] = useState(null);
+
+  const navigate = useNavigate();
 
   const fetchData = useCallback(async () => {
     dispatch({ type: 'FETCH_REQUEST' });
@@ -40,24 +43,40 @@ function HomeScreen({ cartItems, setCartItems }) {
     } catch (err) {
       dispatch({ type: 'FETCH_FAIL', payload: err.message });
     }
-  }, [error]); // 👈 Add dependencies here
+  }, [error]);
 
   useEffect(() => {
     document.title = 'ShopFusion';
     fetchData();
-  }, [fetchData]);
+    const storedUser = localStorage.getItem('userInfo');
+    const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+    setUserInfo(parsedUser);
+
+    // Load user-specific cart items
+    if (parsedUser?.email) {
+      const storedCart = localStorage.getItem(`cartItems_${parsedUser.email}`);
+      if (storedCart) {
+        setCartItems(JSON.parse(storedCart));
+      }
+    }
+  }, [fetchData, setCartItems]);
 
   useEffect(() => {
     if (error) {
       const retryInterval = setInterval(() => {
         fetchData();
       }, 5000);
-
       return () => clearInterval(retryInterval);
     }
   }, [error, fetchData]);
 
   const handleAddToCart = async (product) => {
+    if (!userInfo) {
+      alert('⚠️ Please login to add items to your cart.');
+      navigate('/login?redirect=/');
+      return;
+    }
+
     const existingQty = cartItems[product.slug] || 0;
 
     try {
@@ -68,30 +87,31 @@ function HomeScreen({ cartItems, setCartItems }) {
       }
 
       setShowCart(true);
-      setCartItems((prevCart) => ({
-        ...prevCart,
+
+      const updatedCart = {
+        ...cartItems,
         [product.slug]: existingQty + 1,
-      }));
+      };
+
+      setCartItems(updatedCart);
+      localStorage.setItem(
+        `cartItems_${userInfo.email}`,
+        JSON.stringify(updatedCart)
+      ); // 💾 persist
+
+      // 🔔 Manual trigger to simulate cross-tab event
+      window.dispatchEvent(new Event('storage'));
     } catch (err) {
       alert('⚠️ Error checking stock. Please try again later.');
       console.error(err);
     }
   };
 
-  const cartCount = Object.values(cartItems).reduce((sum, qty) => sum + qty, 0);
-
   return (
     <div className="container">
-      {(showCart || cartCount > 0) && (
-        <Link to="/cart" className="cart-indicator">
-          🛒 <span className="cart-count">{cartCount}</span>
-        </Link>
-      )}
-
       <main>
         <h1 className="heading">Featured Products</h1>
 
-        {/* ✅ We are back message */}
         {showRecovery && (
           <div className="recovery-message">
             ✅ We're back online! Products loaded successfully.

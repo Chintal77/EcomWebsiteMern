@@ -1,4 +1,4 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../index.css';
 import { useEffect, useReducer } from 'react';
@@ -25,8 +25,10 @@ const getLogger = () => {
 
 function ProductScreen({ cartItems, setCartItems }) {
   const { slug } = useParams();
-  const logger = getLogger();
+  const navigate = useNavigate();
+  const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 
+  const logger = getLogger();
   const [{ product, loading, error }, dispatch] = useReducer(logger(reducer), {
     product: {},
     loading: true,
@@ -53,13 +55,29 @@ function ProductScreen({ cartItems, setCartItems }) {
   }, [product]);
 
   const handleAddToCart = () => {
+    if (!userInfo) {
+      navigate(`/login?redirect=/product/${slug}`);
+      return;
+    }
+
     const existingQty = cartItems[product.slug] || 0;
+
     if (existingQty < product.countInStock) {
       const updatedCart = {
         ...cartItems,
         [product.slug]: existingQty + 1,
       };
+
       setCartItems(updatedCart);
+
+      // ✅ Persist to localStorage
+      localStorage.setItem(
+        `cartItems_${userInfo.email}`,
+        JSON.stringify(updatedCart)
+      );
+
+      // ✅ Trigger storage event manually so Header updates
+      window.dispatchEvent(new Event('storage'));
     }
   };
 
