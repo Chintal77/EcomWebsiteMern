@@ -41,11 +41,13 @@ function MyOrdersScreen() {
     return true;
   });
 
+  const filteredCount = filteredOrders.length;
+
   const currentOrders = filteredOrders.slice(
     indexOfFirstOrder,
     indexOfLastOrder
   );
-  const totalPages = Math.ceil(orders.length / ordersPerPage);
+  const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -112,6 +114,14 @@ function MyOrdersScreen() {
             >
               ✅ Paid
             </button>
+          </div>
+
+          <div className="order-summary-banner">
+            <span className="order-summary-count">📦 {filteredCount}</span>
+            <span className="order-summary-text">
+              {filteredCount === 1 ? 'order' : 'orders'} for
+              <span className="order-summary-filter"> {filter}</span>
+            </span>
           </div>
 
           <div className="pagination">

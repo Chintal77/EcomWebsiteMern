@@ -125,8 +125,9 @@
   justify-content: center;
   align-items: center;
   margin-top: 2rem;
-  padding: 3rem;
+  padding: 0.5rem;
   gap: 1rem;
+  margin-top: 0.8rem;
 }
 
 .page-btn {
@@ -371,4 +372,59 @@
 .filter-btn.active {
   background-color: #007bff;
   color: white;
+}
+
+.order-count {
+  font-weight: 500;
+  margin: 0.5rem 0 1rem;
+  color: #444;
+}
+
+.order-summary-count {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #0056b3;
+}
+
+.order-summary-text {
+  font-weight: 500;
+}
+
+.order-summary-filter {
+  font-weight: 700;
+  color: #007bff;
+}
+
+.order-summary-banner {
+  margin: 0.3rem 0 0.2rem; /* Less space above and below */
+  padding: 0.4rem 0.8rem;
+  background-color: #eaf4ff;
+  border-left: 4px solid #007bff;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #333;
+}
+
+.order-filters {
+  margin-bottom: 0.8rem; /* Add bottom space after filter buttons */
+}
+
+.order-summary-banner {
+  margin-bottom: 0.8rem; /* Same spacing after order count */
+  padding: 0.5rem 1rem;
+  background-color: #eaf4ff;
+  border-left: 4px solid #007bff;
+  border-radius: 6px;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #333;
+}
+
+.pagination {
+  margin-top: 0rem; /* Remove extra top space if any */
 }
