@@ -1,8 +1,10 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Axios from 'axios';
 import '../AuthScreen.css';
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { Store } from '../Store';
+import { toast } from 'react-toastify';
+import { getError } from '../utils';
 
 function LoginScreen() {
   const navigate = useNavigate();
@@ -16,6 +18,7 @@ function LoginScreen() {
   const [password, setPassword] = useState('');
 
   const { state, dispatch: ctxDispatch } = useContext(Store);
+  const { userInfo } = state;
 
   const submitHandler = async (e) => {
     e.preventDefault();
@@ -30,9 +33,15 @@ function LoginScreen() {
       // ✅ Go to redirect route or fallback to /
       navigate(redirect);
     } catch (err) {
-      alert('Invalid ! Username and Password !!');
+      toast.error(getError(err));
     }
   };
+
+  useEffect(() => {
+    if (userInfo) {
+      navigate(redirect);
+    }
+  }, [navigate, redirect, userInfo]);
 
   return (
     <div className="auth-container">

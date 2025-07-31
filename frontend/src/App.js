@@ -10,6 +10,8 @@ import CheckoutScreen from './screens/CheckoutScreen';
 import Header from './components/Header'; // ✅ import Header
 import MyOrdersScreen from './screens/MyOrdersScreen';
 import OrderSuccessScreen from './screens/OrderSuccessScreen';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   const [cartItems, setCartItems] = useState(() => {
@@ -24,6 +26,7 @@ function App() {
   return (
     <BrowserRouter>
       <div className="app-container">
+        <ToastContainer position="bottom-center" limit={1} />
         <Header cartItems={cartItems} /> {/* ✅ Use Header */}
         <main className="main-content">
           <Routes>
