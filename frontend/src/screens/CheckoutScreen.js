@@ -57,6 +57,7 @@ function CheckoutScreen({ cartItems, setCartItems }) {
   const handlePlaceOrder = () => {
     const order = {
       date: new Date().toLocaleString(),
+      status: 'Placed',
       deliveryInfo: {
         name: userInfo.name,
         email: userInfo.email,

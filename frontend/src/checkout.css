@@ -169,3 +169,37 @@
   border: 1px solid #ccc;
   font-size: 1rem;
 }
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2rem;
+  gap: 1rem;
+}
+
+.page-btn {
+  padding: 0.5rem 1.2rem;
+  border-radius: 6px;
+  border: none;
+  background-color: #007185;
+  color: white;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background-color 0.3s;
+}
+
+.page-btn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.page-btn:hover:not(:disabled) {
+  background-color: #004d5f;
+}
+
+.page-indicator {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #333;
+}
