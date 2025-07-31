@@ -96,6 +96,23 @@ function MyOrdersScreen() {
                     <p className="order-status">
                       🚚 Status: <strong>{order.status || 'Pending'}</strong>
                     </p>
+                    {(() => {
+                      const paymentIcons = {
+                        PhonePe: '📱',
+                        Paytm: '💳',
+                        GPay: '🤑',
+                        Card: '💳',
+                      };
+                      const icon = paymentIcons[order.paymentMode] || '❓';
+                      return (
+                        <p className="order-status">
+                          💰 Payment Mode:{' '}
+                          <strong>
+                            {icon} {order.paymentMode || 'N/A'}
+                          </strong>
+                        </p>
+                      );
+                    })()}
 
                     <div className="items-wrapper">
                       {order.items.map((item) => (

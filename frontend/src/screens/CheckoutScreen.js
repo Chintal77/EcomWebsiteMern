@@ -14,6 +14,14 @@ function CheckoutScreen({ cartItems, setCartItems }) {
   const [stateName, setStateName] = useState('');
   const [pin, setPin] = useState('');
   const [country, setCountry] = useState('');
+  const [showCardPopup, setShowCardPopup] = useState(false);
+  const [paymentMode, setPaymentMode] = useState('');
+  const [cardDetails, setCardDetails] = useState({
+    number: '',
+    name: '',
+    expiry: '',
+    cvv: '',
+  });
 
   const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
 
@@ -55,9 +63,26 @@ function CheckoutScreen({ cartItems, setCartItems }) {
   }, 0);
 
   const handlePlaceOrder = () => {
+    if (!paymentMode) {
+      alert('⚠️ Please select a payment mode before placing the order.');
+      return;
+    }
+
+    if (
+      paymentMode === 'Card' &&
+      (!cardDetails.number ||
+        !cardDetails.name ||
+        !cardDetails.expiry ||
+        !cardDetails.cvv)
+    ) {
+      alert('⚠️ Please fill in all card details.');
+      return;
+    }
+
     const order = {
       date: new Date().toLocaleString(),
       status: 'Placed',
+      paymentMode: paymentMode || 'Not Selected',
       deliveryInfo: {
         name: userInfo.name,
         email: userInfo.email,
@@ -96,12 +121,9 @@ function CheckoutScreen({ cartItems, setCartItems }) {
       JSON.stringify(existingOrders)
     );
 
-    // ✅ Clear cart from both state and localStorage
     setCartItems({});
     localStorage.removeItem(`cartItems_${userInfo.email}`);
 
-    setCartItems({});
-    localStorage.removeItem(`cartItems_${userInfo.email}`);
     navigate('/order-success');
   };
 
@@ -245,9 +267,108 @@ function CheckoutScreen({ cartItems, setCartItems }) {
               ₹{totalAmount.toLocaleString('en-IN')}
             </div>
 
+            <h3 className="section-title">🪙 Select Payment Mode</h3>
+            <button
+              className="payment-btn phonepe"
+              onClick={() => setPaymentMode('PhonePe')}
+            >
+              📱 PhonePe
+            </button>
+            <button
+              className="payment-btn paytm"
+              onClick={() => setPaymentMode('Paytm')}
+            >
+              💳 Paytm
+            </button>
+            <button
+              className="payment-btn gpay"
+              onClick={() => setPaymentMode('GPay')}
+            >
+              🤑 GPay
+            </button>
+            <button
+              className="payment-btn card"
+              onClick={() => {
+                setPaymentMode('Card');
+                setShowCardPopup(true);
+              }}
+            >
+              💳 Credit/Debit Card
+            </button>
+
             <button className="place-order-btn" onClick={handlePlaceOrder}>
               ✅ Place Order
             </button>
+          </div>
+        </div>
+      )}
+      {showCardPopup && (
+        <div className="popup-overlay">
+          <div className="popup-box">
+            <h3>Enter Card Details</h3>
+            <div className="form-group">
+              <label>Card Number</label>
+              <input
+                type="text"
+                placeholder="1234 5678 9012 3456"
+                value={cardDetails.number}
+                onChange={(e) =>
+                  setCardDetails({ ...cardDetails, number: e.target.value })
+                }
+              />
+            </div>
+            <div className="form-group">
+              <label>Name on Card</label>
+              <input
+                type="text"
+                placeholder="John Doe"
+                value={cardDetails.name}
+                onChange={(e) =>
+                  setCardDetails({ ...cardDetails, name: e.target.value })
+                }
+              />
+            </div>
+            <div className="form-row">
+              <div className="form-group">
+                <label>Expiry</label>
+                <input
+                  type="text"
+                  placeholder="MM/YY"
+                  value={cardDetails.expiry}
+                  onChange={(e) =>
+                    setCardDetails({ ...cardDetails, expiry: e.target.value })
+                  }
+                />
+              </div>
+              <div className="form-group">
+                <label>CVV</label>
+                <input
+                  type="password"
+                  placeholder="123"
+                  value={cardDetails.cvv}
+                  onChange={(e) =>
+                    setCardDetails({ ...cardDetails, cvv: e.target.value })
+                  }
+                />
+              </div>
+            </div>
+            <div className="popup-actions">
+              <button
+                className="close-btn"
+                onClick={() => setShowCardPopup(false)}
+              >
+                ❌ Cancel
+              </button>
+              <button
+                className="confirm-btn"
+                onClick={() => {
+                  setShowCardPopup(false);
+                  handlePlaceOrder();
+                }}
+              >
+                ✅ Pay Now
+              </button>
+            </div>
           </div>
         </div>
       )}
