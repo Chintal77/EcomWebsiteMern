@@ -12,6 +12,7 @@ import MyOrdersScreen from './screens/MyOrdersScreen';
 import OrderSuccessScreen from './screens/OrderSuccessScreen';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import PaymentMethodScreen from './screens/PaymentMethodScreen';
 
 function App() {
   const [cartItems, setCartItems] = useState(() => {
@@ -27,6 +28,7 @@ function App() {
     <BrowserRouter>
       <div className="app-container">
         <ToastContainer position="bottom-center" limit={1} />
+        <ToastContainer position="top-center" autoClose={3000} />
         <Header cartItems={cartItems} /> {/* ✅ Use Header */}
         <main className="main-content">
           <Routes>
@@ -47,6 +49,8 @@ function App() {
             />
             <Route path="/login" element={<LoginScreen />} />
             <Route path="/signup" element={<SignupScreen />} />
+            <Route path="/payment" element={<PaymentMethodScreen />} />
+
             <Route
               path="/cart"
               element={

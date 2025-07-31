@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useEffect, useReducer, useState, useCallback } from 'react';
 import logger from 'use-reducer-logger';
+import { toast } from 'react-toastify';
 import '../HomeScreen.css';
 
 const reducer = (state, action) => {
@@ -72,7 +73,10 @@ function HomeScreen({ cartItems, setCartItems }) {
 
   const handleAddToCart = async (product) => {
     if (!userInfo) {
-      alert('⚠️ Please login to add items to your cart.');
+      toast.warn('⚠️ Please login to add items to your cart.', {
+        position: 'top-center',
+        theme: 'colored',
+      });
       navigate('/login?redirect=/');
       return;
     }
