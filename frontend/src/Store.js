@@ -1,4 +1,3 @@
-// ✅ Store.js
 import { createContext, useReducer } from 'react';
 
 export const Store = createContext();
@@ -10,10 +9,14 @@ const getInitialCartItems = () => {
 
   if (userInfo?.email) {
     const cart = localStorage.getItem(`cartItems_${userInfo.email}`);
-    return cart ? JSON.parse(cart) : {};
+    try {
+      const parsed = JSON.parse(cart);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
   }
-
-  return {};
+  return [];
 };
 
 const initialState = {
@@ -43,21 +46,21 @@ function reducer(state, action) {
   switch (action.type) {
     case 'SET_FULLBOX_ON':
       return { ...state, fullBox: true };
-
     case 'SET_FULLBOX_OFF':
       return { ...state, fullBox: false };
-
     case 'CART_ADD_ITEM': {
       const newItem = action.payload;
       const userInfo = state.userInfo;
-
-      const existItem = state.cart.cartItems[newItem.slug];
-      const cartItems = {
-        ...state.cart.cartItems,
-        [newItem.slug]: existItem
-          ? { ...existItem, quantity: existItem.quantity + 1 }
-          : { ...newItem, quantity: 1 },
-      };
+      const existItem = state.cart.cartItems.find(
+        (item) => item.slug === newItem.slug
+      );
+      const cartItems = existItem
+        ? state.cart.cartItems.map((item) =>
+            item.slug === newItem.slug
+              ? { ...item, quantity: item.quantity + 1 }
+              : item
+          )
+        : [...state.cart.cartItems, { ...newItem, quantity: 1 }];
 
       if (userInfo?.email) {
         localStorage.setItem(
@@ -66,10 +69,8 @@ function reducer(state, action) {
         );
         window.dispatchEvent(new Event('storage'));
       }
-
       return { ...state, cart: { ...state.cart, cartItems } };
     }
-
     case 'SAVE_SHIPPING_ADDRESS': {
       localStorage.setItem('shippingAddress', JSON.stringify(action.payload));
       return {
@@ -80,11 +81,19 @@ function reducer(state, action) {
         },
       };
     }
-
+    case 'SAVE_PAYMENT_METHOD': {
+      localStorage.setItem('paymentMethod', action.payload);
+      return {
+        ...state,
+        cart: {
+          ...state.cart,
+          paymentMethod: action.payload,
+        },
+      };
+    }
     case 'USER_SIGNIN':
       localStorage.setItem('userInfo', JSON.stringify(action.payload));
       return { ...state, userInfo: action.payload };
-
     case 'USER_SIGNOUT': {
       const userInfo = state.userInfo;
       if (userInfo?.email) {
@@ -96,10 +105,9 @@ function reducer(state, action) {
       return {
         ...state,
         userInfo: null,
-        cart: { cartItems: {}, shippingAddress: {}, paymentMethod: '' },
+        cart: { cartItems: [], shippingAddress: {}, paymentMethod: '' },
       };
     }
-
     default:
       return state;
   }

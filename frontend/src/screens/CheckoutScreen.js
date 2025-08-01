@@ -8,6 +8,7 @@ function CheckoutScreen({ cartItems, setCartItems }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [landmark, setLandmark] = useState('');
@@ -15,6 +16,7 @@ function CheckoutScreen({ cartItems, setCartItems }) {
   const [stateName, setStateName] = useState('');
   const [pin, setPin] = useState('');
   const [country, setCountry] = useState('');
+  const [isDeliverySaved, setIsDeliverySaved] = useState(false);
 
   const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
 
@@ -34,7 +36,6 @@ function CheckoutScreen({ cartItems, setCartItems }) {
         setLoading(false);
       }
     };
-
     fetchProducts();
   }, []);
 
@@ -46,6 +47,29 @@ function CheckoutScreen({ cartItems, setCartItems }) {
     setProductsInCart(filtered);
   }, [products, cartItems]);
 
+  // ✅ Auto-clear delivery info on entering /checkout
+  useEffect(() => {
+    const saved = JSON.parse(localStorage.getItem('deliveryInfo') || '{}');
+    if (saved.phone) {
+      localStorage.removeItem('deliveryInfo');
+      toast.info(
+        '🗑️ Previous delivery info cleared. Please enter new details.',
+        {
+          autoClose: 3000,
+        }
+      );
+    }
+
+    setPhone('');
+    setAddress('');
+    setLandmark('');
+    setCity('');
+    setStateName('');
+    setPin('');
+    setCountry('');
+    setIsDeliverySaved(false);
+  }, []);
+
   const totalAmount = productsInCart.reduce((acc, product) => {
     const quantity = cartItems[product.slug];
     const discountMatch = product.badge?.match(/(\d+)%/);
@@ -55,10 +79,9 @@ function CheckoutScreen({ cartItems, setCartItems }) {
     return acc + finalPrice * quantity;
   }, 0);
 
-  const taxAmount = Math.round(totalAmount * 0.18); // 18% GST
+  const taxAmount = Math.round(totalAmount * 0.18);
   const shippingCharge = totalAmount >= 1000 ? 0 : 50;
   const grandTotal = totalAmount + taxAmount + shippingCharge;
-
   const shippingMessage =
     shippingCharge === 0
       ? '🎉 Free Shipping applied (on orders ₹1000+)'
@@ -67,6 +90,32 @@ function CheckoutScreen({ cartItems, setCartItems }) {
   const estimatedDeliveryDate = new Date();
   estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + 5);
   const deliveryDateStr = estimatedDeliveryDate.toDateString();
+
+  const handleSaveDeliveryInfo = () => {
+    if (!phone || !address || !city || !stateName || !pin || !country) {
+      toast.error('🚚 Please fill in all required delivery fields.', {
+        position: 'top-center',
+        autoClose: 3000,
+      });
+      return;
+    }
+
+    const deliveryDetails = {
+      name: userInfo.name,
+      email: userInfo.email,
+      phone,
+      address,
+      landmark,
+      city,
+      state: stateName,
+      pin,
+      country,
+    };
+
+    localStorage.setItem('deliveryInfo', JSON.stringify(deliveryDetails));
+    setIsDeliverySaved(true);
+    toast.success('✅ Delivery Info Saved!', { autoClose: 2000 });
+  };
 
   const handlePlaceOrder = () => {
     if (totalAmount === 0 || productsInCart.length === 0) {
@@ -77,8 +126,12 @@ function CheckoutScreen({ cartItems, setCartItems }) {
       return;
     }
 
-    if (!phone || !address || !city || !stateName || !pin || !country) {
-      toast.error('🚚 Please fill in all required delivery fields.', {
+    const savedDelivery = JSON.parse(
+      localStorage.getItem('deliveryInfo') || '{}'
+    );
+
+    if (!savedDelivery.phone || !savedDelivery.address || !savedDelivery.city) {
+      toast.error('🚚 Please save your delivery info before proceeding.', {
         position: 'top-center',
         autoClose: 3000,
       });
@@ -90,17 +143,7 @@ function CheckoutScreen({ cartItems, setCartItems }) {
       status: 'Pending Payment',
       paymentMode: 'Not Selected',
       deliveryDate: deliveryDateStr,
-      deliveryInfo: {
-        name: userInfo.name,
-        email: userInfo.email,
-        phone,
-        address,
-        landmark,
-        city,
-        state: stateName,
-        pin,
-        country,
-      },
+      deliveryInfo: savedDelivery,
       items: productsInCart.map((product) => {
         const quantity = cartItems[product.slug];
         const discountMatch = product.badge?.match(/(\d+)%/);
@@ -131,9 +174,19 @@ function CheckoutScreen({ cartItems, setCartItems }) {
       JSON.stringify(existingOrders)
     );
 
+    localStorage.setItem(
+      'latestOrderSummary',
+      JSON.stringify({
+        subtotal: totalAmount,
+        taxAmount,
+        shippingCharge,
+        grandTotal,
+        deliveryInfo: savedDelivery,
+      })
+    );
+
     setCartItems({});
     localStorage.removeItem(`cartItems_${userInfo.email}`);
-
     navigate('/payment');
   };
 
@@ -150,7 +203,6 @@ function CheckoutScreen({ cartItems, setCartItems }) {
         <p className="loading-message">Loading your cart...</p>
       ) : (
         <div className="checkout-grid">
-          {/* LEFT: Cart Items */}
           <div className="cart-items">
             <h3 className="section-title">🛒 Items in Your Cart</h3>
             {productsInCart.length === 0 ? (
@@ -174,7 +226,7 @@ function CheckoutScreen({ cartItems, setCartItems }) {
                     <div>
                       <h4 className="product-name">{product.name}</h4>
                       <p>
-                        Qty: <span className="bold">{quantity}</span>
+                        Qty: <strong>{quantity}</strong>
                       </p>
                       <p>Price: ₹{finalPrice.toLocaleString('en-IN')} each</p>
                       <p className="subtotal">
@@ -187,7 +239,6 @@ function CheckoutScreen({ cartItems, setCartItems }) {
             )}
           </div>
 
-          {/* RIGHT: Delivery Info & Place Order */}
           <div className="summary-box">
             <h3 className="section-title">📦 Delivery Info</h3>
             <div className="delivery-info-form">
@@ -195,32 +246,26 @@ function CheckoutScreen({ cartItems, setCartItems }) {
                 <label>Name:</label>
                 <input type="text" value={userInfo.name} disabled />
               </div>
-
               <div className="form-group">
                 <label>Email:</label>
                 <input type="email" value={userInfo.email} disabled />
               </div>
-
               <div className="form-group">
                 <label>Phone:</label>
                 <input
                   type="text"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  required
                 />
               </div>
-
               <div className="form-group">
                 <label>Address:</label>
                 <input
                   type="text"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
-                  required
                 />
               </div>
-
               <div className="form-group">
                 <label>Landmark:</label>
                 <input
@@ -229,46 +274,44 @@ function CheckoutScreen({ cartItems, setCartItems }) {
                   onChange={(e) => setLandmark(e.target.value)}
                 />
               </div>
-
               <div className="form-group">
                 <label>City:</label>
                 <input
                   type="text"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  required
                 />
               </div>
-
               <div className="form-group">
                 <label>State:</label>
                 <input
                   type="text"
                   value={stateName}
                   onChange={(e) => setStateName(e.target.value)}
-                  required
                 />
               </div>
-
               <div className="form-group">
                 <label>PIN Code:</label>
                 <input
                   type="text"
                   value={pin}
                   onChange={(e) => setPin(e.target.value)}
-                  required
                 />
               </div>
-
               <div className="form-group">
                 <label>Country:</label>
                 <input
                   type="text"
                   value={country}
                   onChange={(e) => setCountry(e.target.value)}
-                  required
                 />
               </div>
+              <button
+                className="save-delivery-btn"
+                onClick={handleSaveDeliveryInfo}
+              >
+                💾 Save Delivery Info
+              </button>
             </div>
 
             <h3 className="section-title">💳 Payment Summary</h3>
@@ -293,6 +336,22 @@ function CheckoutScreen({ cartItems, setCartItems }) {
             <div className="delivery-date">
               📦 Estimated Delivery: <strong>{deliveryDateStr}</strong>
             </div>
+
+            {isDeliverySaved && (
+              <div className="saved-delivery-summary">
+                <h4>📍 Shipping Address:</h4>
+                <p>
+                  {userInfo.name}, {phone}
+                </p>
+                <p>
+                  {address}, {landmark}
+                </p>
+                <p>
+                  {city}, {stateName} - {pin}
+                </p>
+                <p>{country}</p>
+              </div>
+            )}
 
             <button className="place-order-btn" onClick={handlePlaceOrder}>
               💸 Proceed to Payment

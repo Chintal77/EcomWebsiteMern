@@ -27,8 +27,7 @@ function App() {
   return (
     <BrowserRouter>
       <div className="app-container">
-        <ToastContainer position="bottom-center" limit={1} />
-        <ToastContainer position="top-center" autoClose={3000} />
+        <ToastContainer position="top-center" autoClose={3000} limit={1} />
         <Header cartItems={cartItems} /> {/* ✅ Use Header */}
         <main className="main-content">
           <Routes>
