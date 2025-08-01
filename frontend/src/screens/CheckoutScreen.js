@@ -55,6 +55,19 @@ function CheckoutScreen({ cartItems, setCartItems }) {
     return acc + finalPrice * quantity;
   }, 0);
 
+  const taxAmount = Math.round(totalAmount * 0.18); // 18% GST
+  const shippingCharge = totalAmount >= 1000 ? 0 : 50;
+  const grandTotal = totalAmount + taxAmount + shippingCharge;
+
+  const shippingMessage =
+    shippingCharge === 0
+      ? '🎉 Free Shipping applied (on orders ₹1000+)'
+      : '🚚 Shipping Charges Applied (Subtotal < ₹1000)';
+
+  const estimatedDeliveryDate = new Date();
+  estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + 5);
+  const deliveryDateStr = estimatedDeliveryDate.toDateString();
+
   const handlePlaceOrder = () => {
     if (totalAmount === 0 || productsInCart.length === 0) {
       toast.error('🛒 Please add items to your cart to proceed.', {
@@ -76,6 +89,7 @@ function CheckoutScreen({ cartItems, setCartItems }) {
       date: new Date().toLocaleString(),
       status: 'Pending Payment',
       paymentMode: 'Not Selected',
+      deliveryDate: deliveryDateStr,
       deliveryInfo: {
         name: userInfo.name,
         email: userInfo.email,
@@ -102,7 +116,10 @@ function CheckoutScreen({ cartItems, setCartItems }) {
           price: finalPrice,
         };
       }),
-      total: totalAmount,
+      subtotal: totalAmount,
+      tax: taxAmount,
+      shipping: shippingCharge,
+      total: grandTotal,
     };
 
     const existingOrders = JSON.parse(
@@ -255,8 +272,26 @@ function CheckoutScreen({ cartItems, setCartItems }) {
             </div>
 
             <h3 className="section-title">💳 Payment Summary</h3>
-            <div className="total-price">
-              ₹{totalAmount.toLocaleString('en-IN')}
+            <div className="price-row">
+              Subtotal: ₹{totalAmount.toLocaleString('en-IN')}
+            </div>
+            <div className="price-row">
+              Tax (18% GST): ₹{taxAmount.toLocaleString('en-IN')}
+            </div>
+            <div
+              className={`price-row ${
+                shippingCharge === 0 ? 'free-shipping' : 'shipping-charged'
+              }`}
+            >
+              Shipping Charges: ₹{shippingCharge.toLocaleString('en-IN')}
+            </div>
+            <div className="shipping-note">{shippingMessage}</div>
+            <hr />
+            <div className="price-row bold">
+              Grand Total: ₹{grandTotal.toLocaleString('en-IN')}
+            </div>
+            <div className="delivery-date">
+              📦 Estimated Delivery: <strong>{deliveryDateStr}</strong>
             </div>
 
             <button className="place-order-btn" onClick={handlePlaceOrder}>
