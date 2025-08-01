@@ -66,9 +66,7 @@ function App() {
                 />
               }
             />
-
             <Route path="/orders" element={<MyOrdersScreen />} />
-
             <Route path="/order-success" element={<OrderSuccessScreen />} />
           </Routes>
         </main>

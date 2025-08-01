@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import '../checkout.css';
 
 function CheckoutScreen({ cartItems, setCartItems }) {
@@ -55,6 +56,22 @@ function CheckoutScreen({ cartItems, setCartItems }) {
   }, 0);
 
   const handlePlaceOrder = () => {
+    if (totalAmount === 0 || productsInCart.length === 0) {
+      toast.error('🛒 Please add items to your cart to proceed.', {
+        position: 'top-center',
+        autoClose: 3000,
+      });
+      return;
+    }
+
+    if (!phone || !address || !city || !stateName || !pin || !country) {
+      toast.error('🚚 Please fill in all required delivery fields.', {
+        position: 'top-center',
+        autoClose: 3000,
+      });
+      return;
+    }
+
     const order = {
       date: new Date().toLocaleString(),
       status: 'Pending Payment',
