@@ -53,11 +53,16 @@ function HomeScreen({ cartItems, setCartItems }) {
     const parsedUser = storedUser ? JSON.parse(storedUser) : null;
     setUserInfo(parsedUser);
 
-    // Load user-specific cart items
+    // Load user-specific cart items safely
     if (parsedUser?.email) {
       const storedCart = localStorage.getItem(`cartItems_${parsedUser.email}`);
       if (storedCart) {
-        setCartItems(JSON.parse(storedCart));
+        try {
+          const parsedCart = JSON.parse(storedCart);
+          setCartItems(Array.isArray(parsedCart) ? parsedCart : []);
+        } catch {
+          setCartItems([]);
+        }
       }
     }
   }, [fetchData, setCartItems]);
@@ -81,30 +86,50 @@ function HomeScreen({ cartItems, setCartItems }) {
       return;
     }
 
-    const existingQty = cartItems[product.slug] || 0;
-
     try {
       const { data } = await axios.get(`/api/products/${product._id}`);
-      if (existingQty >= data.countInStock) {
-        alert('❌ Cannot add more. Stock limit reached!');
-        return;
+
+      const existingCart = Array.isArray(cartItems) ? cartItems : [];
+      const existingIndex = existingCart.findIndex(
+        (item) => item.slug === product.slug
+      );
+
+      let updatedCart;
+
+      if (existingIndex !== -1) {
+        const existingItem = existingCart[existingIndex];
+        if (existingItem.quantity >= data.countInStock) {
+          alert('❌ Cannot add more. Stock limit reached!');
+          return;
+        }
+
+        updatedCart = [...existingCart];
+        updatedCart[existingIndex] = {
+          ...existingItem,
+          quantity: existingItem.quantity + 1,
+        };
+      } else {
+        const newItem = {
+          name: product.name,
+          slug: product.slug,
+          image: product.image,
+          price: product.price,
+          quantity: 1,
+          countInStock: product.countInStock,
+          product: product._id, // ✅ critical field
+        };
+
+        updatedCart = [...existingCart, newItem];
       }
-
-      setShowCart(true);
-
-      const updatedCart = {
-        ...cartItems,
-        [product.slug]: existingQty + 1,
-      };
 
       setCartItems(updatedCart);
       localStorage.setItem(
         `cartItems_${userInfo.email}`,
         JSON.stringify(updatedCart)
-      ); // 💾 persist
+      );
 
-      // 🔔 Manual trigger to simulate cross-tab event
       window.dispatchEvent(new Event('storage'));
+      setShowCart(true);
     } catch (err) {
       alert('⚠️ Error checking stock. Please try again later.');
       console.error(err);
@@ -146,6 +171,11 @@ function HomeScreen({ cartItems, setCartItems }) {
               );
               const finalPrice = product.price - discountAmount;
 
+              const currentQty = Array.isArray(cartItems)
+                ? cartItems.find((item) => item.slug === product.slug)
+                    ?.quantity || 0
+                : 0;
+
               return (
                 <div className="product-card" key={product.slug}>
                   {product.badge && (
@@ -179,28 +209,26 @@ function HomeScreen({ cartItems, setCartItems }) {
                       className={`btn-cart ${
                         product.countInStock === 0
                           ? 'btn-out'
-                          : (cartItems[product.slug] || 0) >=
-                            product.countInStock
+                          : currentQty >= product.countInStock
                           ? 'btn-limit'
                           : 'btn-add'
                       }`}
                       disabled={
                         product.countInStock === 0 ||
-                        (cartItems[product.slug] || 0) >= product.countInStock
+                        currentQty >= product.countInStock
                       }
                       onClick={() => handleAddToCart(product)}
                       title={
                         product.countInStock === 0
                           ? 'Out of stock'
-                          : (cartItems[product.slug] || 0) >=
-                            product.countInStock
+                          : currentQty >= product.countInStock
                           ? 'You have reached the max quantity available.'
                           : ''
                       }
                     >
                       {product.countInStock === 0
                         ? 'Out of Stock'
-                        : (cartItems[product.slug] || 0) >= product.countInStock
+                        : currentQty >= product.countInStock
                         ? 'Limit Reached'
                         : 'Add to Cart'}
                     </button>

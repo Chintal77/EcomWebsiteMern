@@ -60,26 +60,46 @@ function ProductScreen({ cartItems, setCartItems }) {
       return;
     }
 
-    const existingQty = cartItems[product.slug] || 0;
+    const existingItem = Array.isArray(cartItems)
+      ? cartItems.find((item) => item.slug === product.slug)
+      : null;
 
-    if (existingQty < product.countInStock) {
-      const updatedCart = {
-        ...cartItems,
-        [product.slug]: existingQty + 1,
-      };
+    const updatedCart = existingItem
+      ? cartItems.map((item) =>
+          item.slug === product.slug
+            ? {
+                ...item,
+                quantity:
+                  item.quantity < product.countInStock
+                    ? item.quantity + 1
+                    : item.quantity,
+              }
+            : item
+        )
+      : [
+          ...(Array.isArray(cartItems) ? cartItems : []),
+          {
+            name: product.name,
+            slug: product.slug,
+            image: product.image,
+            price: product.price,
+            quantity: 1,
+            countInStock: product.countInStock,
+            product: product._id,
+          },
+        ];
 
-      setCartItems(updatedCart);
-
-      // ✅ Persist to localStorage
-      localStorage.setItem(
-        `cartItems_${userInfo.email}`,
-        JSON.stringify(updatedCart)
-      );
-
-      // ✅ Trigger storage event manually so Header updates
-      window.dispatchEvent(new Event('storage'));
-    }
+    setCartItems(updatedCart);
+    localStorage.setItem(
+      `cartItems_${userInfo.email}`,
+      JSON.stringify(updatedCart)
+    );
+    window.dispatchEvent(new Event('storage'));
   };
+
+  const existingQty = Array.isArray(cartItems)
+    ? cartItems.find((item) => item.slug === product.slug)?.quantity || 0
+    : 0;
 
   if (loading) {
     return <div className="message">Loading product details...</div>;
@@ -138,7 +158,6 @@ function ProductScreen({ cartItems, setCartItems }) {
 
         <p className="product-description">{product.description}</p>
 
-        {/* Highlights */}
         {product.highlights && (
           <ul className="product-highlights">
             {product.highlights.map((point, index) => (
@@ -147,7 +166,6 @@ function ProductScreen({ cartItems, setCartItems }) {
           </ul>
         )}
 
-        {/* Size Info */}
         {product.sizeFit && (
           <div className="size-fit">
             <p>
@@ -156,7 +174,6 @@ function ProductScreen({ cartItems, setCartItems }) {
           </div>
         )}
 
-        {/* Specifications Table */}
         {product.specifications && (
           <table className="spec-table">
             <tbody>
@@ -170,7 +187,6 @@ function ProductScreen({ cartItems, setCartItems }) {
           </table>
         )}
 
-        {/* Additional Info */}
         <div className="extra-info">
           {product.brand && (
             <p>
@@ -199,7 +215,6 @@ function ProductScreen({ cartItems, setCartItems }) {
           )}
         </div>
 
-        {/* Stock */}
         <p
           className={`stock ${
             product.countInStock > 0 ? 'in-stock' : 'out-of-stock'
@@ -208,31 +223,29 @@ function ProductScreen({ cartItems, setCartItems }) {
           {product.countInStock > 0 ? '✅ In Stock' : '❌ Out of Stock'}
         </p>
 
-        {/* Cart Button */}
         <button
           className={`btn-cart ${
             product.countInStock === 0
               ? 'btn-out'
-              : (cartItems[product.slug] || 0) >= product.countInStock
+              : existingQty >= product.countInStock
               ? 'btn-limit'
               : 'btn-add'
           }`}
           disabled={
-            product.countInStock === 0 ||
-            (cartItems[product.slug] || 0) >= product.countInStock
+            product.countInStock === 0 || existingQty >= product.countInStock
           }
           onClick={handleAddToCart}
           title={
             product.countInStock === 0
               ? 'Out of stock'
-              : (cartItems[product.slug] || 0) >= product.countInStock
+              : existingQty >= product.countInStock
               ? 'You have reached the max quantity available.'
               : ''
           }
         >
           {product.countInStock === 0
             ? 'Out of Stock'
-            : (cartItems[product.slug] || 0) >= product.countInStock
+            : existingQty >= product.countInStock
             ? 'Limit Reached'
             : 'Add to Cart'}
         </button>

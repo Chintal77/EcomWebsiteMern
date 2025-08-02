@@ -45,11 +45,12 @@ function CartScreen({ cartItems, setCartItems }) {
   }, []);
 
   useEffect(() => {
-    const cartProductSlugs = Object.keys(cartItems);
-    const filteredProducts = products.filter((product) =>
-      cartProductSlugs.includes(product.slug)
+    if (!Array.isArray(cartItems)) return;
+    const cartSlugs = cartItems.map((item) => item.slug);
+    const matchedProducts = products.filter((product) =>
+      cartSlugs.includes(product.slug)
     );
-    setProductsInCart(filteredProducts);
+    setProductsInCart(matchedProducts);
   }, [products, cartItems]);
 
   const updateLocalStorage = (updatedCart) => {
@@ -63,26 +64,25 @@ function CartScreen({ cartItems, setCartItems }) {
   };
 
   const updateQuantity = (slug, type) => {
-    setCartItems((prev) => {
-      const currentQty = prev[slug];
-      const product = products.find((p) => p.slug === slug);
-      const maxQty = product?.countInStock || 1;
-
-      const newQty =
-        type === 'inc'
-          ? Math.min(currentQty + 1, maxQty)
-          : Math.max(currentQty - 1, 1);
-
-      const updatedCart = { ...prev, [slug]: newQty };
-      updateLocalStorage(updatedCart);
-      return updatedCart;
+    const updated = cartItems.map((item) => {
+      if (item.slug === slug) {
+        const product = products.find((p) => p.slug === slug);
+        const max = product?.countInStock || 1;
+        const newQty =
+          type === 'inc'
+            ? Math.min(item.quantity + 1, max)
+            : Math.max(item.quantity - 1, 1);
+        return { ...item, quantity: newQty };
+      }
+      return item;
     });
+    setCartItems(updated);
+    updateLocalStorage(updated);
   };
 
   const removeItem = (slug) => {
     if (window.confirm('Remove this item?')) {
-      const updated = { ...cartItems };
-      delete updated[slug];
+      const updated = cartItems.filter((item) => item.slug !== slug);
       setCartItems(updated);
       updateLocalStorage(updated);
     }
@@ -90,8 +90,8 @@ function CartScreen({ cartItems, setCartItems }) {
 
   const emptyCart = () => {
     if (window.confirm('Clear entire cart?')) {
-      setCartItems({});
-      updateLocalStorage({});
+      setCartItems([]);
+      updateLocalStorage([]);
     }
   };
 
@@ -99,12 +99,12 @@ function CartScreen({ cartItems, setCartItems }) {
     userInfo ? navigate('/checkout') : navigate('/login?redirect=/checkout');
   };
 
-  const totalAmount = productsInCart.reduce((acc, product) => {
-    const quantity = cartItems[product.slug];
+  const totalAmount = cartItems.reduce((acc, item) => {
+    const product = products.find((p) => p.slug === item.slug);
+    if (!product) return acc;
     const discount = parseInt(product.badge?.match(/(\d+)%/)?.[1]) || 0;
-    const discountedPrice =
-      product.price - Math.round((product.price * discount) / 100);
-    return acc + discountedPrice * quantity;
+    const price = product.price - Math.round((product.price * discount) / 100);
+    return acc + price * item.quantity;
   }, 0);
 
   return (
@@ -115,7 +115,7 @@ function CartScreen({ cartItems, setCartItems }) {
         <p className="cart-loading">Loading...</p>
       ) : error ? (
         <p className="cart-error">❌ {error}</p>
-      ) : productsInCart.length === 0 ? (
+      ) : cartItems.length === 0 ? (
         <div className="cart-empty">
           <h2>Your cart is empty 😢</h2>
           <Link to="/" className="btn-shop">
@@ -126,12 +126,14 @@ function CartScreen({ cartItems, setCartItems }) {
         <div className="cart-content">
           <div className="cart-items">
             {productsInCart.map((product) => {
-              const qty = cartItems[product.slug];
+              const item = cartItems.find((c) => c.slug === product.slug);
+              if (!item) return null;
+
               const discount =
                 parseInt(product.badge?.match(/(\d+)%/)?.[1]) || 0;
               const discountedPrice =
                 product.price - Math.round((product.price * discount) / 100);
-              const subtotal = discountedPrice * qty;
+              const subtotal = discountedPrice * item.quantity;
 
               return (
                 <div key={product.slug} className="cart-item-card">
@@ -143,6 +145,9 @@ function CartScreen({ cartItems, setCartItems }) {
                     >
                       <h4>{product.name}</h4>
                     </Link>
+                    <p className="product-id">
+                      <strong>ID:</strong> {product._id}
+                    </p>
                     <p>
                       <span className="label">Price:</span>
                       <s>₹{product.price.toLocaleString('en-IN')}</s>{' '}
@@ -159,11 +164,11 @@ function CartScreen({ cartItems, setCartItems }) {
                         >
                           ➖
                         </button>
-                        <span className="qty-value">{qty}</span>
+                        <span className="qty-value">{item.quantity}</span>
                         <button
                           onClick={() => updateQuantity(product.slug, 'inc')}
                           className="qty-btn"
-                          disabled={qty >= product.countInStock}
+                          disabled={item.quantity >= product.countInStock}
                           title={`Max: ${product.countInStock}`}
                         >
                           ➕

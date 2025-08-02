@@ -2,17 +2,19 @@ import './App.css';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import HomeScreen from './screens/HomeScreen';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import ProductScreen from './screens/ProductScreen';
 import LoginScreen from './screens/LoginScreen';
 import SignupScreen from './screens/SignupScreen';
 import CartScreen from './screens/CartScreen';
 import CheckoutScreen from './screens/CheckoutScreen';
 import Header from './components/Header'; // ✅ import Header
-import MyOrdersScreen from './screens/MyOrdersScreen';
+
 import OrderSuccessScreen from './screens/OrderSuccessScreen';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import PaymentMethodScreen from './screens/PaymentMethodScreen';
+import OrderScreen from './screens/MyOrdersScreen';
 
 function App() {
   const [cartItems, setCartItems] = useState(() => {
@@ -65,8 +67,9 @@ function App() {
                 />
               }
             />
-            <Route path="/orders" element={<MyOrdersScreen />} />
+            <Route path="/orders" element={<OrderScreen />} />
             <Route path="/order-success" element={<OrderSuccessScreen />} />
+            <Route path="/order/:id" element={<OrderScreen />}></Route>
           </Routes>
         </main>
         <footer className="footer">

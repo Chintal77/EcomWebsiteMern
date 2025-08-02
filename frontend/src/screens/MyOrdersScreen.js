@@ -1,261 +1,175 @@
-import { useEffect, useState } from 'react';
+import axios from 'axios';
+import React, { useContext, useEffect, useReducer } from 'react';
+import { Helmet } from 'react-helmet-async';
+import { useNavigate, useParams } from 'react-router-dom';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+import ListGroup from 'react-bootstrap/ListGroup';
+import Card from 'react-bootstrap/Card';
+import { Link } from 'react-router-dom';
+import LoadingBox from '../components/LoadingBox';
+import MessageBox from '../components/MessageBox';
+import { Store } from '../Store';
+import { getError } from '../utils';
 import '../orders.css';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 
-function MyOrdersScreen() {
-  const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+function reducer(state, action) {
+  switch (action.type) {
+    case 'FETCH_REQUEST':
+      return { ...state, loading: true, error: '' };
+    case 'FETCH_SUCCESS':
+      return { ...state, loading: false, order: action.payload, error: '' };
+    case 'FETCH_FAIL':
+      return { ...state, loading: false, error: action.payload };
 
-  const [filter, setFilter] = useState('All');
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const ordersPerPage = 3;
-
-  useEffect(() => {
-    document.title = 'Shopfusion | My Orders';
-
-    try {
-      const savedOrders = JSON.parse(
-        localStorage.getItem(`orders_${userInfo.email}`) || '[]'
-      );
-      setOrders(savedOrders);
-    } catch (err) {
-      console.error('Error reading orders:', err);
-      setOrders([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [userInfo.email]);
-
-  if (!userInfo.name) {
-    return <p className="order-error">❌ Please log in to view your orders.</p>;
+    default:
+      return state;
   }
+}
+export default function OrderScreen() {
+  const { state } = useContext(Store);
+  const { userInfo } = state;
 
-  const indexOfLastOrder = currentPage * ordersPerPage;
-  const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
-  const filteredOrders = orders.filter((order) => {
-    if (filter === 'All') return true;
-    if (filter === 'Pending Payment') return order.status === 'Pending Payment';
-    if (filter === 'Paid') return order.status === 'Paid';
-    return true;
+  const params = useParams();
+  const { id: orderId } = params;
+  const navigate = useNavigate();
+
+  const [{ loading, error, order }, dispatch] = useReducer(reducer, {
+    loading: true,
+    order: {},
+    error: '',
   });
 
-  const filteredCount = filteredOrders.length;
+  useEffect(() => {
+    const fetchOrder = async () => {
+      try {
+        dispatch({ type: 'FETCH_REQUEST' });
+        const { data } = await axios.get(`/api/orders/${orderId}`, {
+          headers: { authorization: `Bearer ${userInfo.token}` },
+        });
+        dispatch({ type: 'FETCH_SUCCESS', payload: data });
+      } catch (err) {
+        dispatch({ type: 'FETCH_FAIL', payload: getError(err) });
+      }
+    };
 
-  const currentOrders = filteredOrders.slice(
-    indexOfFirstOrder,
-    indexOfLastOrder
-  );
-  const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
-
-  const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      setCurrentPage(newPage);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (!userInfo) {
+      return navigate('/login');
     }
-  };
+    if (!order._id || (order._id && order._id !== orderId)) {
+      fetchOrder();
+    }
+  }, [order, userInfo, orderId, navigate]);
+  return loading ? (
+    <LoadingBox></LoadingBox>
+  ) : error ? (
+    <MessageBox variant="danger">{error}</MessageBox>
+  ) : (
+    <div className="container">
+      <div>
+        <Helmet>
+          <title>Order {orderId}</title>
+        </Helmet>
+        <h1 className="my-3">Order {orderId}</h1>
+        <Row>
+          <Col md={8}>
+            <Card className="mb-3">
+              <Card.Body>
+                <Card.Title>Shipping</Card.Title>
+                <Card.Text>
+                  <strong>Name:</strong> {order.shippingAddress.name} <br />
+                  <strong>Address: </strong> {order.shippingAddress.address},
+                  {order.shippingAddress.city}, {order.shippingAddress.pin},
+                  {order.shippingAddress.country}
+                </Card.Text>
+                {order.isDelivered ? (
+                  <MessageBox variant="success">
+                    Delivered at {order.deliveredAt}
+                  </MessageBox>
+                ) : (
+                  <MessageBox variant="danger" style={{ color: 'red' }}>
+                    Not Delivered
+                  </MessageBox>
+                )}
+              </Card.Body>
+            </Card>
+            <Card className="mb-3">
+              <Card.Body>
+                <Card.Title>Payment</Card.Title>
+                <Card.Text>
+                  <strong>Method:</strong> {order.paymentMethod}
+                </Card.Text>
+                {order.isPaid ? (
+                  <MessageBox variant="success">
+                    Paid at {order.paidAt}
+                  </MessageBox>
+                ) : (
+                  <MessageBox variant="danger">Not Paid</MessageBox>
+                )}
+              </Card.Body>
+            </Card>
 
-  const downloadPDF = (pdfId, orderIndex) => {
-    const input = document.getElementById(pdfId);
-    if (!input) return;
-
-    html2canvas(input, { scale: 2 }).then((canvas) => {
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`Order_${orderIndex + 1}.pdf`);
-    });
-  };
-
-  const paymentIcons = {
-    PhonePe: '📱',
-    Paytm: '💳',
-    GPay: '🤑',
-    Card: '💳',
-    Cash: '💵',
-    PayPal: '🌐',
-  };
-  const retryPayment = (order) => {
-    localStorage.setItem('retryOrder', JSON.stringify(order));
-    window.location.href = '/payment'; // Adjust if your route is different
-  };
-  return (
-    <div className="orders-container">
-      <h2 className="orders-title">📜 My Orders</h2>
-
-      {loading ? (
-        <p className="loading-message">⏳ Fetching your orders...</p>
-      ) : orders.length === 0 ? (
-        <p className="no-orders">🛒 You have not placed any orders yet.</p>
-      ) : (
-        <>
-          <div className="order-filters">
-            <button
-              className={`filter-btn ${filter === 'All' ? 'active' : ''}`}
-              onClick={() => setFilter('All')}
-            >
-              🔄 All
-            </button>
-            <button
-              className={`filter-btn ${
-                filter === 'Pending Payment' ? 'active' : ''
-              }`}
-              onClick={() => setFilter('Pending Payment')}
-            >
-              ⏳ Pending Payment
-            </button>
-            <button
-              className={`filter-btn ${filter === 'Paid' ? 'active' : ''}`}
-              onClick={() => setFilter('Paid')}
-            >
-              ✅ Paid
-            </button>
-          </div>
-
-          <div className="order-summary-banner">
-            <span className="order-summary-count">📦 {filteredCount}</span>
-            <span className="order-summary-text">
-              {filteredCount === 1 ? 'order' : 'orders'} for
-              <span className="order-summary-filter"> {filter}</span>
-            </span>
-          </div>
-
-          <div className="pagination">
-            <button
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="page-btn"
-            >
-              ⬅ Prev
-            </button>
-            <span className="page-indicator">
-              Page {currentPage} of {totalPages}
-            </span>
-            <button
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="page-btn"
-            >
-              Next ➡
-            </button>
-          </div>
-
-          <div id="orders-section">
-            {currentOrders.map((order, index) => {
-              const orderIndex = indexOfFirstOrder + index;
-              const pdfId = `order-pdf-${orderIndex}`;
-              const icon = paymentIcons[order.paymentMode] || '❓';
-
-              return (
-                <div key={orderIndex} className="order-card-wrapper">
-                  <div id={pdfId} className="order-card">
-                    <h3 className="order-id">🧾 Order #{orderIndex + 1}</h3>
-                    <p className="order-date">📅 Placed on: {order.date}</p>
-                    <p className="order-status">
-                      🚚 Status: <strong>{order.status || 'Pending'}</strong>
-                    </p>
-
-                    {order.status === 'Pending Payment' && (
-                      <button
-                        className="retry-btn order-btn"
-                        onClick={() => retryPayment(order)}
-                      >
-                        🔁 Retry Payment
-                      </button>
-                    )}
-
-                    <p className="order-status">
-                      💰 Payment Mode:{' '}
-                      <strong>
-                        {icon} {order.paymentMode || 'N/A'}
-                      </strong>
-                    </p>
-                    {order.transactionId && (
-                      <p className="order-status">
-                        🧾 Transaction ID:{' '}
-                        <strong>{order.transactionId}</strong>
-                      </p>
-                    )}
-
-                    <div className="items-wrapper">
-                      {order.items.map((item) => (
-                        <div key={item.slug} className="order-item row-view">
-                          <img
-                            src={item.image}
-                            alt={item.name}
-                            className="product-image"
-                          />
-                          <div className="row-details">
-                            <div className="col name">{item.name}</div>
-                            <div className="col qty">Qty: {item.quantity}</div>
-                            <div className="col price">
-                              Price: ₹{item.price}
-                            </div>
-                            <div className="col subtotal">
-                              Subtotal: ₹{item.price * item.quantity}
-                            </div>
+            <Card className="mb-3 card-items">
+              <Card.Body>
+                <Card.Title>Items</Card.Title>
+                <ListGroup variant="flush">
+                  {order.orderItems.map((item) => (
+                    <ListGroup.Item key={item._id}>
+                      <div className="item-row">
+                        <img src={item.image} alt={item.name} />
+                        <div className="item-details">
+                          <div className="item-name">{item.name}</div>
+                          <div className="item-qty">Qty: {item.quantity}</div>
+                          <div className="item-price">
+                            Price: ₹{item.price.toLocaleString('en-IN')}
                           </div>
                         </div>
-                      ))}
-                    </div>
-
-                    {order.deliveryInfo && (
-                      <div className="shipping-info">
-                        <strong>Shipping To:</strong>
-                        <br />
-                        {order.deliveryInfo.fullName}
-                        <br />
-                        {order.deliveryInfo.address},{' '}
-                        {order.deliveryInfo.landmark}, {order.deliveryInfo.city}
-                        , {order.deliveryInfo.state} - {order.deliveryInfo.pin}
-                        <br />
-                        📞 {order.deliveryInfo.phone}
                       </div>
-                    )}
-
-                    <div className="order-total">
-                      <strong>Total: ₹{order.total}</strong>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => downloadPDF(pdfId, orderIndex)}
-                    className="download-btn order-btn"
-                  >
-                    ⬇ Download PDF
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="pagination">
-            <button
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="page-btn"
-            >
-              ⬅ Prev
-            </button>
-            <span className="page-indicator">
-              Page {currentPage} of {totalPages}
-            </span>
-            <button
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="page-btn"
-            >
-              Next ➡
-            </button>
-          </div>
-        </>
-      )}
+                    </ListGroup.Item>
+                  ))}
+                </ListGroup>
+              </Card.Body>
+            </Card>
+          </Col>
+          <Col md={4}>
+            <Card className="mb-3">
+              <Card.Body>
+                <Card.Title>Order Summary</Card.Title>
+                <ListGroup variant="flush">
+                  <ListGroup.Item>
+                    <Row>
+                      <Col>Items</Col>
+                      <Col>₹{order.itemsPrice.toFixed(2)}</Col>
+                    </Row>
+                  </ListGroup.Item>
+                  <ListGroup.Item>
+                    <Row>
+                      <Col>Shipping</Col>
+                      <Col>₹{order.shippingPrice.toFixed(2)}</Col>
+                    </Row>
+                  </ListGroup.Item>
+                  <ListGroup.Item>
+                    <Row>
+                      <Col>Tax</Col>
+                      <Col>₹{order.taxPrice.toFixed(2)}</Col>
+                    </Row>
+                  </ListGroup.Item>
+                  <ListGroup.Item>
+                    <Row>
+                      <Col>
+                        <strong> Order Total</strong>
+                      </Col>
+                      <Col>
+                        <strong>₹{order.totalPrice.toFixed(2)}</strong>
+                      </Col>
+                    </Row>
+                  </ListGroup.Item>
+                </ListGroup>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </div>
     </div>
   );
 }
-
-export default MyOrdersScreen;

@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import seedRouter from './routes/seedRoutes.js';
 import productRouter from './routes/productRoutes.js';
 import userRouter from './routes/userRoutes.js';
+import orderRouter from './routes/orderRoutes.js';
 
 dotenv.config();
 mongoose
@@ -25,6 +26,7 @@ app.use('/api/seed', seedRouter);
 // Route to get all products
 app.use('/api/products', productRouter);
 app.use('/api/users', userRouter);
+app.use('/api/orders', orderRouter);
 
 // Route to get a single product by slug
 app.get('/api/products/:slug', (req, res) => {

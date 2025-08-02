@@ -39,15 +39,20 @@ function CheckoutScreen({ cartItems, setCartItems }) {
     fetchProducts();
   }, []);
 
+  // Adjusted: Filter products based on array of cartItems
   useEffect(() => {
-    const cartProductSlugs = Object.keys(cartItems);
+    if (!Array.isArray(cartItems) || cartItems.length === 0) {
+      setProductsInCart([]);
+      return;
+    }
+    const cartProductSlugs = cartItems.map((item) => item.slug);
     const filtered = products.filter((product) =>
       cartProductSlugs.includes(product.slug)
     );
     setProductsInCart(filtered);
   }, [products, cartItems]);
 
-  // ✅ Auto-clear delivery info on entering /checkout
+  // Auto-clear delivery info on entering /checkout
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem('deliveryInfo') || '{}');
     if (saved.phone) {
@@ -70,8 +75,10 @@ function CheckoutScreen({ cartItems, setCartItems }) {
     setIsDeliverySaved(false);
   }, []);
 
+  // Calculate total amount using array cartItems
   const totalAmount = productsInCart.reduce((acc, product) => {
-    const quantity = cartItems[product.slug];
+    const cartItem = cartItems.find((item) => item.slug === product.slug);
+    const quantity = cartItem ? cartItem.quantity : 0;
     const discountMatch = product.badge?.match(/(\d+)%/);
     const discount = discountMatch ? parseInt(discountMatch[1]) : 0;
     const finalPrice =
@@ -145,7 +152,8 @@ function CheckoutScreen({ cartItems, setCartItems }) {
       deliveryDate: deliveryDateStr,
       deliveryInfo: savedDelivery,
       items: productsInCart.map((product) => {
-        const quantity = cartItems[product.slug];
+        const cartItem = cartItems.find((item) => item.slug === product.slug);
+        const quantity = cartItem ? cartItem.quantity : 0;
         const discountMatch = product.badge?.match(/(\d+)%/);
         const discount = discountMatch ? parseInt(discountMatch[1]) : 0;
         const finalPrice =
@@ -185,7 +193,7 @@ function CheckoutScreen({ cartItems, setCartItems }) {
       })
     );
 
-    setCartItems({});
+    setCartItems([]);
     localStorage.removeItem(`cartItems_${userInfo.email}`);
     navigate('/payment');
   };
@@ -198,6 +206,11 @@ function CheckoutScreen({ cartItems, setCartItems }) {
   return (
     <div className="checkout-container">
       <h2 className="checkout-title">🧾 Checkout Summary</h2>
+      {totalAmount >= 1000 && (
+        <div className="free-shipping-banner">
+          🎁 You’re eligible for <strong>Free Shipping</strong>! (Orders ₹1000+)
+        </div>
+      )}
 
       {loading ? (
         <p className="loading-message">Loading your cart...</p>
@@ -209,7 +222,10 @@ function CheckoutScreen({ cartItems, setCartItems }) {
               <p className="empty-cart">Your cart is empty.</p>
             ) : (
               productsInCart.map((product) => {
-                const quantity = cartItems[product.slug];
+                const cartItem = cartItems.find(
+                  (item) => item.slug === product.slug
+                );
+                const quantity = cartItem ? cartItem.quantity : 0;
                 const discountMatch = product.badge?.match(/(\d+)%/);
                 const discount = discountMatch ? parseInt(discountMatch[1]) : 0;
                 const finalPrice =
@@ -225,6 +241,7 @@ function CheckoutScreen({ cartItems, setCartItems }) {
                     />
                     <div>
                       <h4 className="product-name">{product.name}</h4>
+                      <p className="product-id">ID: {product._id}</p>
                       <p>
                         Qty: <strong>{quantity}</strong>
                       </p>
